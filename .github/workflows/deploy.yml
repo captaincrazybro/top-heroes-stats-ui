@@ -29,7 +29,6 @@ jobs:
 
       - name: Build
         env:
-          BASE_PATH: /top-heroes-stats-ui
           PUBLIC_PB_URL: ${{ vars.PUBLIC_PB_URL }}
         run: npm run build
 
