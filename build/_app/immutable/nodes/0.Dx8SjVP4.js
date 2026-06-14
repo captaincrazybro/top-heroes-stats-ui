@@ -1,1 +1,0 @@
-import{T as e,U as t,c as n,g as r,h as i,j as a,k as o,u as s}from"../chunks/BuaBANj2.js";import"../chunks/xihTtKlq.js";var c=t({prerender:()=>!0,ssr:()=>!1});function l(t,c){var l=r();n(`12qhfyh`,t=>{e(()=>{o.title=`Top Heroes Stats`})}),s(a(l),()=>c.children),i(t,l)}export{l as component,c as universal};
