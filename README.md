@@ -1,42 +1,86 @@
-# sv
+# Top Heroes Stats UI
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A SvelteKit leaderboard for viewing Top Heroes event scores, backed by PocketBase.
 
-## Creating a project
+## Prerequisites
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Node.js 18+
+- A running [PocketBase](https://pocketbase.io) instance with the `topHeroesEventRecords` collection
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## Setup
 
-To recreate this project with the same configuration:
+1. Clone the repository and install dependencies:
 
-```sh
-# recreate this project
-npx sv@0.16.1 create --template minimal --no-types --add vitest="usages:unit" sveltekit-adapter="adapter:static" --no-install top-heroes-stats-ui
-```
+   ```bash
+   npm install
+   ```
 
-## Developing
+2. Copy the example environment file and set your PocketBase URL:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+   ```bash
+   cp .env.example .env
+   ```
 
-```sh
+   Edit `.env`:
+
+   ```
+   PUBLIC_PB_URL=https://your-pocketbase-instance.example.com
+   ```
+
+## Development
+
+Start the dev server:
+
+```bash
 npm run dev
+```
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+The app will be available at `http://localhost:5173`.
+
+## Testing
+
+Run the unit test suite:
+
+```bash
+npm test
 ```
 
 ## Building
 
-To create a production version of your app:
+Build for production (outputs static files via `adapter-static`):
 
-```sh
+```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+Preview the production build locally:
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```bash
+npm run preview
+```
+
+## Environment Variables
+
+| Variable | Description |
+|---|---|
+| `PUBLIC_PB_URL` | Base URL of the PocketBase instance (no trailing slash) |
+
+## Project Structure
+
+```
+src/
+  app.html              # HTML shell
+  app.css               # Global styles
+  lib/
+    pb.js               # PocketBase API client
+    utils.js            # Filtering and sorting helpers
+    components/
+      FilterBar.svelte  # Event / week / day dropdowns
+      Leaderboard.svelte # Sortable score table
+  routes/
+    +page.svelte        # Main page — filter state and URL params
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).

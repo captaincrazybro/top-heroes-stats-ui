@@ -27,27 +27,27 @@
 <div class="filter-bar">
   <label>
     Event
-    <select onchange={e => onEventTypeChange(e.target.value)}>
+    <select value={eventType} onchange={e => onEventTypeChange(e.target.value)}>
       {#each EVENT_TYPES as type}
-        <option value={type} selected={type === eventType}>{type}</option>
+        <option value={type}>{type}</option>
       {/each}
     </select>
   </label>
 
   <label>
     Week of
-    <select onchange={e => onWeekChange(e.target.value)}>
+    <select value={selectedWeek} onchange={e => onWeekChange(e.target.value)}>
       {#each (weeks ?? []) as week}
-        <option value={week} selected={week === selectedWeek}>{formatWeek(week)}</option>
+        <option value={week}>{formatWeek(week)}</option>
       {/each}
     </select>
   </label>
 
   <label>
     Day
-    <select onchange={e => onDayChange(e.target.value)}>
+    <select value={selectedDay} onchange={e => onDayChange(e.target.value)}>
       {#each DAYS as day}
-        <option value={day} selected={day === selectedDay}>{day}</option>
+        <option value={day}>{day}</option>
       {/each}
     </select>
   </label>

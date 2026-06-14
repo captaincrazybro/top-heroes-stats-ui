@@ -80,6 +80,8 @@ tbody td:first-child { color: #f8c34a; font-weight: bold; width: 60px; }
 
 tbody td:last-child { color: #4af87a; text-align: right; }
 
+thead th:last-child { text-align: right; }
+
 .status {
   padding: 2rem;
   color: #666;
