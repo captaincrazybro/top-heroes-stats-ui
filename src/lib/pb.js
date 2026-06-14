@@ -25,7 +25,7 @@ export async function getEventWeeks(eventType) {
   const data = await pbFetch(`/collections/${COLLECTION}/records?${params}`);
   const seen = new Set();
   return data.items
-    .map(r => r.event_start_date)
+    .map(r => r.event_start_date.split(' ')[0])
     .filter(d => {
       if (seen.has(d)) return false;
       seen.add(d);
@@ -35,7 +35,7 @@ export async function getEventWeeks(eventType) {
 
 export async function getRecords(eventType, eventStartDate) {
   const params = new URLSearchParams({
-    filter: `event_type='${eventType}'&&event_start_date='${eventStartDate}'`,
+    filter: `event_type='${eventType}'&&event_start_date~'${eventStartDate}'`,
     sort: 'rank',
     perPage: '500',
   });
