@@ -24,15 +24,6 @@
 
 <div class="filter-bar">
   <label>
-    Event
-    <select value={eventType} onchange={e => onEventTypeChange(e.target.value)}>
-      {#each EVENT_TYPES as type}
-        <option value={type}>{type}</option>
-      {/each}
-    </select>
-  </label>
-
-  <label>
     Week of
     <select value={selectedWeek} onchange={e => onWeekChange(e.target.value)}>
       {#each (weeks ?? []) as week}
@@ -41,12 +32,25 @@
     </select>
   </label>
 
-  <div class="day-group">
-    <span class="day-label">Day</span>
-    <div class="day-tabs">
+  <div class="tab-group">
+    <span class="tab-label">Event</span>
+    <div class="tabs">
+      {#each EVENT_TYPES as type}
+        <button
+          class="tab"
+          class:active={type === eventType}
+          onclick={() => onEventTypeChange(type)}
+        >{type}</button>
+      {/each}
+    </div>
+  </div>
+
+  <div class="tab-group">
+    <span class="tab-label">Day</span>
+    <div class="tabs">
       {#each DAYS as day}
         <button
-          class="day-tab"
+          class="tab"
           class:active={day === selectedDay}
           onclick={() => onDayChange(day)}
         >{day}</button>
@@ -56,24 +60,24 @@
 </div>
 
 <style>
-  .day-group {
+  .tab-group {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
   }
 
-  .day-label {
+  .tab-label {
     font-size: 0.75rem;
     color: #888;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
-  .day-tabs {
+  .tabs {
     display: flex;
   }
 
-  .day-tab {
+  .tab {
     background: #1a1a1a;
     color: #e0e0e0;
     border: 1px solid #444;
@@ -84,12 +88,12 @@
     line-height: 1;
   }
 
-  .day-tab:first-child { border-radius: 4px 0 0 4px; }
-  .day-tab:last-child  { border-radius: 0 4px 4px 0; border-right: 1px solid #444; }
+  .tab:first-child { border-radius: 4px 0 0 4px; }
+  .tab:last-child  { border-radius: 0 4px 4px 0; border-right: 1px solid #444; }
 
-  .day-tab:hover { border-color: #888; z-index: 1; }
+  .tab:hover { border-color: #888; z-index: 1; }
 
-  .day-tab.active {
+  .tab.active {
     background: #f8c34a;
     color: #0d0d0d;
     border-color: #f8c34a;
@@ -97,5 +101,5 @@
     z-index: 1;
   }
 
-  .day-tab.active + .day-tab { border-left-color: #f8c34a; }
+  .tab.active + .tab { border-left-color: #f8c34a; }
 </style>
