@@ -50,8 +50,17 @@
 
 	onMount(async () => {
 		const params = new URLSearchParams(window.location.search);
-		eventType = params.get('event') ?? 'GAR';
-		selectedDay = params.get('day') ?? 'All';
+
+		// Validate eventType from URL
+		const EVENT_TYPES = ['GAR', 'GR', 'KvK'];
+		const rawEvent = params.get('event');
+		eventType = EVENT_TYPES.includes(rawEvent) ? rawEvent : 'GAR';
+
+		// Validate selectedDay from URL
+		const DAYS = ['All', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+		const rawDay = params.get('day');
+		selectedDay = DAYS.includes(rawDay) ? rawDay : 'All';
+
 		const preferredWeek = params.get('week') ?? '';
 		await loadWeeks(preferredWeek);
 	});

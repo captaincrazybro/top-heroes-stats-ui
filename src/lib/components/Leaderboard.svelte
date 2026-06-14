@@ -40,7 +40,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each sorted as row (row.rank + '|' + row.player_name)}
+        {#each sorted as row (row.id)}
           <tr>
             <td>{row.rank}</td>
             <td>{row.player_name}</td>
