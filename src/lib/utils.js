@@ -1,4 +1,4 @@
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_NAMES = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function filterByDay(records, day) {
   if (records.length === 0) return [];
@@ -18,7 +18,7 @@ export function sortRecords(records, column, direction) {
   const sorted = [...records].sort((a, b) => {
     const aVal = a[column];
     const bVal = b[column];
-    if (typeof aVal === 'number') return aVal - bVal;
+    if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
     return String(aVal).localeCompare(String(bVal));
   });
   return direction === 'desc' ? sorted.reverse() : sorted;

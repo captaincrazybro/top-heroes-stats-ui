@@ -35,6 +35,10 @@ describe('filterByDay', () => {
   test('returns empty array when no records match the day', () => {
     expect(filterByDay(RECORDS, 'Wed')).toEqual([]);
   });
+
+  test('returns empty array for Sun (not a valid day in the app)', () => {
+    expect(filterByDay(RECORDS, 'Sun')).toEqual([]);
+  });
 });
 
 describe('sortRecords', () => {
