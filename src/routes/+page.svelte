@@ -1,13 +1,13 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { getEventWeeks, getRecords } from '$lib/pb.js';
+	import { getEventOptions, getRecords } from '$lib/pb.js';
 	import { filterByDay } from '$lib/utils.js';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import Leaderboard from '$lib/components/Leaderboard.svelte';
 
 	let eventType = $state('GAR');
-	let weeks = $state([]);
+	let eventOptions = $state([]);
 	let selectedWeek = $state('');
 	let selectedDay = $state('All');
 	let allRecords = $state([]);
@@ -36,13 +36,17 @@
 		updateUrl();
 	}
 
-	async function loadWeeks(preferredWeek) {
+	async function loadOptions(preferredEvent, preferredWeek) {
 		try {
-			weeks = await getEventWeeks(eventType);
-			selectedWeek = weeks.includes(preferredWeek) ? preferredWeek : (weeks[0] ?? '');
+			eventOptions = await getEventOptions();
+			const match = eventOptions.find(o => o.eventType === preferredEvent && o.week === preferredWeek);
+			const selected = match ?? eventOptions[0] ?? { eventType: 'GAR', week: '' };
+			eventType = selected.eventType;
+			selectedWeek = selected.week;
 		} catch (e) {
 			error = e.message;
-			weeks = [];
+			eventOptions = [];
+			eventType = 'GAR';
 			selectedWeek = '';
 		}
 		await loadRecords();
@@ -51,28 +55,16 @@
 	onMount(async () => {
 		const params = new URLSearchParams(window.location.search);
 
-		// Validate eventType from URL
-		const EVENT_TYPES = ['GAR', 'GR', 'KvK'];
-		const rawEvent = params.get('event');
-		eventType = EVENT_TYPES.includes(rawEvent) ? rawEvent : 'GAR';
-
-		// Validate selectedDay from URL
 		const DAYS = ['All', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 		const rawDay = params.get('day');
 		selectedDay = DAYS.includes(rawDay) ? rawDay : 'All';
 
-		const preferredWeek = params.get('week') ?? '';
-		await loadWeeks(preferredWeek);
+		await loadOptions(params.get('event') ?? '', params.get('week') ?? '');
 	});
 
-	async function onEventTypeChange(val) {
-		eventType = val;
-		selectedDay = 'All';
-		await loadWeeks('');
-	}
-
-	async function onWeekChange(val) {
-		selectedWeek = val;
+	async function onSelectionChange(type, week) {
+		eventType = type;
+		selectedWeek = week;
 		selectedDay = 'All';
 		await loadRecords();
 	}
@@ -85,12 +77,11 @@
 
 <h1>Top Heroes Stats</h1>
 <FilterBar
+	{eventOptions}
 	{eventType}
-	{weeks}
 	{selectedWeek}
 	{selectedDay}
-	{onEventTypeChange}
-	{onWeekChange}
+	{onSelectionChange}
 	{onDayChange}
 />
 <Leaderboard records={filtered} {loading} {error} />

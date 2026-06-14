@@ -15,20 +15,20 @@ async function pbFetch(path) {
   return data;
 }
 
-export async function getEventWeeks(eventType) {
+export async function getEventOptions() {
   const params = new URLSearchParams({
-    filter: `event_type='${eventType}'`,
-    fields: 'event_start_date',
+    fields: 'event_type,event_start_date',
     sort: '-event_start_date',
     perPage: '500',
   });
   const data = await pbFetch(`/collections/${COLLECTION}/records?${params}`);
   const seen = new Set();
   return data.items
-    .map(r => r.event_start_date.split(' ')[0])
-    .filter(d => {
-      if (seen.has(d)) return false;
-      seen.add(d);
+    .map(r => ({ eventType: r.event_type, week: r.event_start_date.split(' ')[0] }))
+    .filter(({ eventType, week }) => {
+      const key = `${eventType}|${week}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
 }

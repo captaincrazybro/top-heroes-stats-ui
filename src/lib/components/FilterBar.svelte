@@ -1,14 +1,12 @@
 <script>
-  const DAYS        = ['All', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const EVENT_TYPES = ['GAR', 'GR', 'KvK'];
+  const DAYS = ['All', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   let {
+    eventOptions,
     eventType,
-    weeks,
     selectedWeek,
     selectedDay,
-    onEventTypeChange,
-    onWeekChange,
+    onSelectionChange,
     onDayChange,
   } = $props();
 
@@ -20,30 +18,24 @@
       month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'
     });
   }
+
+  function onSelectChange(e) {
+    const [type, week] = e.target.value.split('|');
+    onSelectionChange(type, week);
+  }
 </script>
 
 <div class="filter-bar">
   <label>
-    Week of
-    <select value={selectedWeek} onchange={e => onWeekChange(e.target.value)}>
-      {#each (weeks ?? []) as week}
-        <option value={week}>{formatWeek(week)}</option>
+    Event &amp; Week
+    <select value={`${eventType}|${selectedWeek}`} onchange={onSelectChange}>
+      {#each (eventOptions ?? []) as opt}
+        <option value={`${opt.eventType}|${opt.week}`}>
+          {opt.eventType} — {formatWeek(opt.week)}
+        </option>
       {/each}
     </select>
   </label>
-
-  <div class="tab-group">
-    <span class="tab-label">Event</span>
-    <div class="tabs">
-      {#each EVENT_TYPES as type}
-        <button
-          class="tab"
-          class:active={type === eventType}
-          onclick={() => onEventTypeChange(type)}
-        >{type}</button>
-      {/each}
-    </div>
-  </div>
 
   <div class="tab-group">
     <span class="tab-label">Day</span>

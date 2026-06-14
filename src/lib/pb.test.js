@@ -3,7 +3,7 @@ import { describe, test, expect, vi, afterEach } from 'vitest';
 vi.mock('$env/static/public', () => ({ PUBLIC_PB_URL: 'http://localhost:8090' }));
 
 // Import after mock is registered
-const { getEventWeeks, getRecords } = await import('./pb.js');
+const { getEventOptions, getRecords } = await import('./pb.js');
 
 function mockFetch(data, status = 200) {
   return vi.fn().mockResolvedValue({
@@ -16,37 +16,46 @@ function mockFetch(data, status = 200) {
 
 afterEach(() => vi.restoreAllMocks());
 
-describe('getEventWeeks', () => {
-  test('returns deduplicated event_start_date values in original sort order', async () => {
+describe('getEventOptions', () => {
+  test('returns deduplicated {eventType, week} pairs in sort order', async () => {
     vi.stubGlobal('fetch', mockFetch({
       items: [
-        { event_start_date: '2026-06-09 00:00:00.000Z' },
-        { event_start_date: '2026-06-09 00:00:00.000Z' },
-        { event_start_date: '2026-06-02 00:00:00.000Z' },
+        { event_type: 'GAR', event_start_date: '2026-06-09 00:00:00.000Z' },
+        { event_type: 'GAR', event_start_date: '2026-06-09 00:00:00.000Z' },
+        { event_type: 'GR',  event_start_date: '2026-06-02 00:00:00.000Z' },
       ]
     }));
-    const result = await getEventWeeks('GAR');
-    expect(result).toEqual(['2026-06-09 00:00:00.000Z', '2026-06-02 00:00:00.000Z']);
+    const result = await getEventOptions();
+    expect(result).toEqual([
+      { eventType: 'GAR', week: '2026-06-09' },
+      { eventType: 'GR',  week: '2026-06-02' },
+    ]);
   });
 
-  test('includes event_type in the filter', async () => {
-    const fetchMock = mockFetch({ items: [] });
-    vi.stubGlobal('fetch', fetchMock);
-    await getEventWeeks('GR');
-    expect(decodeURIComponent(fetchMock.mock.calls[0][0])).toContain("event_type='GR'");
+  test('deduplicates by eventType+week pair', async () => {
+    vi.stubGlobal('fetch', mockFetch({
+      items: [
+        { event_type: 'GAR', event_start_date: '2026-06-09 00:00:00.000Z' },
+        { event_type: 'GR',  event_start_date: '2026-06-09 00:00:00.000Z' },
+        { event_type: 'GAR', event_start_date: '2026-06-09 00:00:00.000Z' },
+      ]
+    }));
+    const result = await getEventOptions();
+    expect(result).toHaveLength(2);
   });
 
-  test('requests only the event_start_date field', async () => {
+  test('requests event_type and event_start_date fields', async () => {
     const fetchMock = mockFetch({ items: [] });
     vi.stubGlobal('fetch', fetchMock);
-    await getEventWeeks('KvK');
-    expect(decodeURIComponent(fetchMock.mock.calls[0][0])).toContain('fields=event_start_date');
-    expect(decodeURIComponent(fetchMock.mock.calls[0][0])).toContain('perPage=500');
+    await getEventOptions();
+    const url = decodeURIComponent(fetchMock.mock.calls[0][0]);
+    expect(url).toContain('fields=event_type,event_start_date');
+    expect(url).toContain('perPage=500');
   });
 
   test('throws on non-ok response', async () => {
     vi.stubGlobal('fetch', mockFetch({ message: 'Not found' }, 404));
-    await expect(getEventWeeks('GAR')).rejects.toThrow('404');
+    await expect(getEventOptions()).rejects.toThrow('404');
   });
 });
 
@@ -57,29 +66,29 @@ describe('getRecords', () => {
       { rank: 2, player_name: 'Bob',   score: 2000 },
     ];
     vi.stubGlobal('fetch', mockFetch({ items }));
-    const result = await getRecords('GAR', '2026-06-09 00:00:00.000Z');
+    const result = await getRecords('GAR', '2026-06-09');
     expect(result).toEqual(items);
   });
 
   test('includes both event_type and event_start_date in the filter', async () => {
     const fetchMock = mockFetch({ items: [] });
     vi.stubGlobal('fetch', fetchMock);
-    await getRecords('KvK', '2026-05-26 00:00:00.000Z');
-    const url = fetchMock.mock.calls[0][0];
-    expect(decodeURIComponent(url)).toContain("event_type='KvK'");
-    expect(decodeURIComponent(url)).toContain("event_start_date='2026-05-26");
-    expect(decodeURIComponent(url)).toContain('perPage=500');
+    await getRecords('KvK', '2026-05-26');
+    const url = decodeURIComponent(fetchMock.mock.calls[0][0]);
+    expect(url).toContain("event_type='KvK'");
+    expect(url).toContain("event_start_date~'2026-05-26");
+    expect(url).toContain('perPage=500');
   });
 
   test('sorts results by rank', async () => {
     const fetchMock = mockFetch({ items: [] });
     vi.stubGlobal('fetch', fetchMock);
-    await getRecords('GAR', '2026-06-09 00:00:00.000Z');
+    await getRecords('GAR', '2026-06-09');
     expect(fetchMock.mock.calls[0][0]).toContain('sort=rank');
   });
 
   test('throws on non-ok response', async () => {
     vi.stubGlobal('fetch', mockFetch({ message: 'Forbidden' }, 403));
-    await expect(getRecords('GAR', '2026-06-09 00:00:00.000Z')).rejects.toThrow('403');
+    await expect(getRecords('GAR', '2026-06-09')).rejects.toThrow('403');
   });
 });
