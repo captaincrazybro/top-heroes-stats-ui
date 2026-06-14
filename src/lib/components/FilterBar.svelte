@@ -14,8 +14,6 @@
 
   function formatWeek(raw) {
     if (!raw) return '';
-    // raw is the PocketBase date string e.g. "2026-06-09 00:00:00.000Z"
-    // Parse just the date part to avoid timezone shifts
     const [datePart] = raw.split(' ');
     const d = new Date(datePart + 'T00:00:00Z');
     return d.toLocaleDateString('en-US', {
@@ -43,12 +41,61 @@
     </select>
   </label>
 
-  <label>
-    Day
-    <select value={selectedDay} onchange={e => onDayChange(e.target.value)}>
+  <div class="day-group">
+    <span class="day-label">Day</span>
+    <div class="day-tabs">
       {#each DAYS as day}
-        <option value={day}>{day}</option>
+        <button
+          class="day-tab"
+          class:active={day === selectedDay}
+          onclick={() => onDayChange(day)}
+        >{day}</button>
       {/each}
-    </select>
-  </label>
+    </div>
+  </div>
 </div>
+
+<style>
+  .day-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .day-label {
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .day-tabs {
+    display: flex;
+  }
+
+  .day-tab {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-right: none;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .day-tab:first-child { border-radius: 4px 0 0 4px; }
+  .day-tab:last-child  { border-radius: 0 4px 4px 0; border-right: 1px solid #444; }
+
+  .day-tab:hover { border-color: #888; z-index: 1; }
+
+  .day-tab.active {
+    background: #f8c34a;
+    color: #0d0d0d;
+    border-color: #f8c34a;
+    font-weight: 600;
+    z-index: 1;
+  }
+
+  .day-tab.active + .day-tab { border-left-color: #f8c34a; }
+</style>
