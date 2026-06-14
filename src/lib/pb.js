@@ -8,14 +8,21 @@ async function pbFetch(path) {
     const body = await res.text().catch(() => '');
     throw new Error(`PocketBase ${path} → ${res.status}: ${body}`);
   }
-  return res.json();
+  const data = await res.json();
+  if (data.totalPages > 1) {
+    console.warn(`[pb] ${path} has ${data.totalPages} pages; only page 1 returned`);
+  }
+  return data;
 }
 
 export async function getEventWeeks(eventType) {
-  const filter = `event_type='${eventType}'`;
-  const data = await pbFetch(
-    `/collections/${COLLECTION}/records?filter=${filter}&fields=event_start_date&sort=-event_start_date&perPage=500`
-  );
+  const params = new URLSearchParams({
+    filter: `event_type='${eventType}'`,
+    fields: 'event_start_date',
+    sort: '-event_start_date',
+    perPage: '500',
+  });
+  const data = await pbFetch(`/collections/${COLLECTION}/records?${params}`);
   const seen = new Set();
   return data.items
     .map(r => r.event_start_date)
@@ -27,9 +34,11 @@ export async function getEventWeeks(eventType) {
 }
 
 export async function getRecords(eventType, eventStartDate) {
-  const filter = `event_type='${eventType}'&&event_start_date='${eventStartDate}'`;
-  const data = await pbFetch(
-    `/collections/${COLLECTION}/records?filter=${filter}&sort=rank&perPage=500`
-  );
+  const params = new URLSearchParams({
+    filter: `event_type='${eventType}'&&event_start_date='${eventStartDate}'`,
+    sort: 'rank',
+    perPage: '500',
+  });
+  const data = await pbFetch(`/collections/${COLLECTION}/records?${params}`);
   return data.items;
 }

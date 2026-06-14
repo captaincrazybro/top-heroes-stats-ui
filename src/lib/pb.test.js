@@ -33,14 +33,15 @@ describe('getEventWeeks', () => {
     const fetchMock = mockFetch({ items: [] });
     vi.stubGlobal('fetch', fetchMock);
     await getEventWeeks('GR');
-    expect(fetchMock.mock.calls[0][0]).toContain("event_type='GR'");
+    expect(decodeURIComponent(fetchMock.mock.calls[0][0])).toContain("event_type='GR'");
   });
 
   test('requests only the event_start_date field', async () => {
     const fetchMock = mockFetch({ items: [] });
     vi.stubGlobal('fetch', fetchMock);
     await getEventWeeks('KvK');
-    expect(fetchMock.mock.calls[0][0]).toContain('fields=event_start_date');
+    expect(decodeURIComponent(fetchMock.mock.calls[0][0])).toContain('fields=event_start_date');
+    expect(decodeURIComponent(fetchMock.mock.calls[0][0])).toContain('perPage=500');
   });
 
   test('throws on non-ok response', async () => {
@@ -65,8 +66,9 @@ describe('getRecords', () => {
     vi.stubGlobal('fetch', fetchMock);
     await getRecords('KvK', '2026-05-26 00:00:00.000Z');
     const url = fetchMock.mock.calls[0][0];
-    expect(url).toContain("event_type='KvK'");
-    expect(url).toContain('2026-05-26');
+    expect(decodeURIComponent(url)).toContain("event_type='KvK'");
+    expect(decodeURIComponent(url)).toContain("event_start_date='2026-05-26");
+    expect(decodeURIComponent(url)).toContain('perPage=500');
   });
 
   test('sorts results by rank', async () => {
