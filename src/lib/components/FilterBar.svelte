@@ -37,6 +37,7 @@
     </select>
   </label>
 
+  {#if eventType !== 'GR'}
   <div class="tab-group">
     <span class="tab-label">Day</span>
     <div class="tabs">
@@ -49,6 +50,7 @@
       {/each}
     </div>
   </div>
+  {/if}
 </div>
 
 <style>
