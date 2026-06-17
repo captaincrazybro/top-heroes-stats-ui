@@ -43,7 +43,6 @@
   </div>
 {:else}
   <div class="roster-card" style="border-top-color:{topBorder};">
-    <div class="card-role">{member.rank}</div>
     <div class="card-name">{member.player_name}</div>
     <div class="card-stats">
       <div><div class="stat-label">Level</div><div class="stat-val">{member.level}</div></div>
