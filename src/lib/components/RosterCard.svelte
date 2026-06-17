@@ -67,14 +67,14 @@
       </div>
       <div class="modal-body">
         <div class="modal-row">
-          <span class="modal-label">MQ Faction</span>
+          <span class="modal-label">Main Queue Faction</span>
           <span
             class="faction-badge"
             style="background:{faction.bg};color:{faction.color};border-color:{faction.border};"
           >{faction.icon} {member.main_queue_faction}</span>
         </div>
         <div class="modal-row">
-          <span class="modal-label">MQ Influence</span>
+          <span class="modal-label">Main Queue Influence</span>
           <span class="modal-val green">{abbrev(member.main_queue_influence)}</span>
         </div>
         <div class="modal-row">
