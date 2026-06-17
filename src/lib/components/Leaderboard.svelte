@@ -34,7 +34,7 @@
     <table>
       <thead>
         <tr>
-          <th onclick={() => toggleSort('rank')}>Rank{indicator('rank')}</th>
+          <th onclick={() => toggleSort('rank')}>{useGuildRank ? 'Guild Rank' : 'Event Rank'}{indicator('rank')}</th>
           <th onclick={() => toggleSort('player_name')}>Player{indicator('player_name')}</th>
           <th onclick={() => toggleSort('score')}>Score{indicator('score')}</th>
         </tr>
