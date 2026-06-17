@@ -3,7 +3,7 @@ import { describe, test, expect, vi, afterEach } from 'vitest';
 vi.mock('$env/static/public', () => ({ PUBLIC_PB_URL: 'http://localhost:8090' }));
 
 // Import after mock is registered
-const { getEventOptions, getRecords, getRosterMembers } = await import('./pb.js');
+const { getEventOptions, getRecords, getRosterMembers, getPastMembers } = await import('./pb.js');
 
 function mockFetch(data, status = 200) {
   return vi.fn().mockResolvedValue({
@@ -123,7 +123,7 @@ describe('getRosterMembers', () => {
     expect(lastUpdated).toBe('2026-06-17 10:00:00.000Z');
   });
 
-  test('requests correct fields, sort, and perPage', async () => {
+  test('requests correct fields, sort, perPage, and joined=true filter', async () => {
     const fetchMock = mockFetch({ items: [] });
     vi.stubGlobal('fetch', fetchMock);
     await getRosterMembers();
@@ -134,10 +134,43 @@ describe('getRosterMembers', () => {
     expect(url).toContain('castle_level');
     expect(url).toContain('main_queue_faction');
     expect(url).toContain('updated');
+    expect(url).toContain('joined=true');
   });
 
   test('throws on non-ok response', async () => {
     vi.stubGlobal('fetch', mockFetch({ message: 'Forbidden' }, 403));
     await expect(getRosterMembers()).rejects.toThrow('403');
+  });
+});
+
+describe('getPastMembers', () => {
+  const PAST_ITEM = {
+    id: 'past1',
+    player_name: 'Charlie', rank: 'R3', level: 70, castle_level: 18,
+    influence: 2500000, main_queue_influence: 600000,
+    main_queue_faction: 'Nature',
+    last_online: '2026-06-10 08:00:00.000Z',
+    updated: '2026-06-10 08:00:00.000Z',
+  };
+
+  test('returns members array from PocketBase response', async () => {
+    vi.stubGlobal('fetch', mockFetch({ items: [PAST_ITEM] }));
+    const { members } = await getPastMembers();
+    expect(members).toEqual([PAST_ITEM]);
+  });
+
+  test('requests joined=false filter', async () => {
+    const fetchMock = mockFetch({ items: [] });
+    vi.stubGlobal('fetch', fetchMock);
+    await getPastMembers();
+    const url = decodeURIComponent(fetchMock.mock.calls[0][0]);
+    expect(url).toContain('joined=false');
+    expect(url).toContain('sort=-influence');
+    expect(url).toContain('perPage=500');
+  });
+
+  test('throws on non-ok response', async () => {
+    vi.stubGlobal('fetch', mockFetch({ message: 'Forbidden' }, 403));
+    await expect(getPastMembers()).rejects.toThrow('403');
   });
 });

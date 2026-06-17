@@ -32,6 +32,9 @@
     <a href="/guild-rankings" class="sidebar-link" class:active={$page.url.pathname === '/guild-rankings'} onclick={close}>
       📊 Guild Rankings
     </a>
+    <a href="/past-members" class="sidebar-link" class:active={$page.url.pathname === '/past-members'} onclick={close}>
+      👤 Past Members
+    </a>
   </nav>
 
   <main class="main-content">
