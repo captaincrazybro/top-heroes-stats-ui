@@ -25,6 +25,7 @@ export function sortRecords(records, column, direction) {
 }
 
 export function formatRelativeTime(dateStr) {
+  if (!dateStr) return 'unknown';
   const diff = Date.now() - new Date(dateStr.replace(/\s/, 'T')).getTime();
   const minutes = Math.floor(diff / 60_000);
   if (minutes < 1) return 'just now';
