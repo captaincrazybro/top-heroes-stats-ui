@@ -163,6 +163,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
+    justify-items: start;
   }
 
   .last-online { font-size: 10px; color: #555; }
