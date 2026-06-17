@@ -42,3 +42,19 @@ export async function getRecords(eventType, eventStartDate) {
   const data = await pbFetch(`/collections/${COLLECTION}/records?${params}`);
   return data.items;
 }
+
+const ROSTER_COLLECTION = 'topHeroesGuildRoster';
+
+export async function getRosterMembers() {
+  const params = new URLSearchParams({
+    fields: 'id,player_name,rank,level,castle_level,influence,main_queue_influence,main_queue_faction,last_online,updated',
+    sort: '-influence',
+    perPage: '500',
+  });
+  const data = await pbFetch(`/collections/${ROSTER_COLLECTION}/records?${params}`);
+  const lastUpdated = data.items.reduce(
+    (max, r) => (r.updated > max ? r.updated : max),
+    ''
+  );
+  return { members: data.items, lastUpdated };
+}

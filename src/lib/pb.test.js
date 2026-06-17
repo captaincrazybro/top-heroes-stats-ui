@@ -3,7 +3,7 @@ import { describe, test, expect, vi, afterEach } from 'vitest';
 vi.mock('$env/static/public', () => ({ PUBLIC_PB_URL: 'http://localhost:8090' }));
 
 // Import after mock is registered
-const { getEventOptions, getRecords } = await import('./pb.js');
+const { getEventOptions, getRecords, getRosterMembers } = await import('./pb.js');
 
 function mockFetch(data, status = 200) {
   return vi.fn().mockResolvedValue({
@@ -90,5 +90,54 @@ describe('getRecords', () => {
   test('throws on non-ok response', async () => {
     vi.stubGlobal('fetch', mockFetch({ message: 'Forbidden' }, 403));
     await expect(getRecords('GAR', '2026-06-09')).rejects.toThrow('403');
+  });
+});
+
+describe('getRosterMembers', () => {
+  const ITEM_A = {
+    id: 'abc1',
+    player_name: 'Alice', rank: 'R4', level: 85, castle_level: 25,
+    influence: 4200000, main_queue_influence: 1100000,
+    main_queue_faction: 'League',
+    last_online: '2026-06-17 10:00:00.000Z',
+    updated: '2026-06-17 10:00:00.000Z',
+  };
+  const ITEM_B = {
+    id: 'abc2',
+    player_name: 'Bob', rank: 'R3', level: 78, castle_level: 22,
+    influence: 3100000, main_queue_influence: 820000,
+    main_queue_faction: 'Horde',
+    last_online: '2026-06-16 08:00:00.000Z',
+    updated: '2026-06-15 08:00:00.000Z',
+  };
+
+  test('returns members array from PocketBase response', async () => {
+    vi.stubGlobal('fetch', mockFetch({ items: [ITEM_A, ITEM_B] }));
+    const { members } = await getRosterMembers();
+    expect(members).toEqual([ITEM_A, ITEM_B]);
+  });
+
+  test('derives lastUpdated as the most recent updated value', async () => {
+    vi.stubGlobal('fetch', mockFetch({ items: [ITEM_A, ITEM_B] }));
+    const { lastUpdated } = await getRosterMembers();
+    expect(lastUpdated).toBe('2026-06-17 10:00:00.000Z');
+  });
+
+  test('requests correct fields, sort, and perPage', async () => {
+    const fetchMock = mockFetch({ items: [] });
+    vi.stubGlobal('fetch', fetchMock);
+    await getRosterMembers();
+    const url = decodeURIComponent(fetchMock.mock.calls[0][0]);
+    expect(url).toContain('sort=-influence');
+    expect(url).toContain('perPage=500');
+    expect(url).toContain('player_name');
+    expect(url).toContain('castle_level');
+    expect(url).toContain('main_queue_faction');
+    expect(url).toContain('updated');
+  });
+
+  test('throws on non-ok response', async () => {
+    vi.stubGlobal('fetch', mockFetch({ message: 'Forbidden' }, 403));
+    await expect(getRosterMembers()).rejects.toThrow('403');
   });
 });
