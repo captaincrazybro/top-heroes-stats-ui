@@ -1,5 +1,5 @@
-import { describe, test, expect } from 'vitest';
-import { filterByDay, sortRecords } from './utils.js';
+import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
+import { filterByDay, sortRecords, formatRelativeTime } from './utils.js';
 
 // Mon Jun 8 = UTC day 1, Tue Jun 9 = UTC day 2
 const RECORDS = [
@@ -72,5 +72,45 @@ describe('sortRecords', () => {
     const original = records.map(r => ({ ...r }));
     sortRecords(records, 'rank', 'desc');
     expect(records).toEqual(original);
+  });
+});
+
+describe('formatRelativeTime', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  test('returns "just now" for under 1 minute', () => {
+    vi.setSystemTime(new Date('2026-06-17T12:00:30Z'));
+    expect(formatRelativeTime('2026-06-17 12:00:00.000Z')).toBe('just now');
+  });
+
+  test('returns "1 minute ago" for exactly 1 minute', () => {
+    vi.setSystemTime(new Date('2026-06-17T12:01:00Z'));
+    expect(formatRelativeTime('2026-06-17 12:00:00.000Z')).toBe('1 minute ago');
+  });
+
+  test('returns "X minutes ago" for under 1 hour', () => {
+    vi.setSystemTime(new Date('2026-06-17T12:30:00Z'));
+    expect(formatRelativeTime('2026-06-17 12:00:00.000Z')).toBe('30 minutes ago');
+  });
+
+  test('returns "1 hour ago" for exactly 1 hour', () => {
+    vi.setSystemTime(new Date('2026-06-17T13:00:00Z'));
+    expect(formatRelativeTime('2026-06-17 12:00:00.000Z')).toBe('1 hour ago');
+  });
+
+  test('returns "X hours ago" for under 24 hours', () => {
+    vi.setSystemTime(new Date('2026-06-17T17:00:00Z'));
+    expect(formatRelativeTime('2026-06-17 12:00:00.000Z')).toBe('5 hours ago');
+  });
+
+  test('returns "1 day ago" for exactly 1 day', () => {
+    vi.setSystemTime(new Date('2026-06-18T12:00:00Z'));
+    expect(formatRelativeTime('2026-06-17 12:00:00.000Z')).toBe('1 day ago');
+  });
+
+  test('returns "X days ago" for multiple days', () => {
+    vi.setSystemTime(new Date('2026-06-20T12:00:00Z'));
+    expect(formatRelativeTime('2026-06-17 12:00:00.000Z')).toBe('3 days ago');
   });
 });
