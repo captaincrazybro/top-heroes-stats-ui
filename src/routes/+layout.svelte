@@ -15,7 +15,9 @@
 </svelte:head>
 
 <div class="app-layout">
-  <button class="sidebar-toggle" aria-label="Toggle navigation" onclick={() => sidebarOpen = !sidebarOpen}>☰</button>
+  <button class="sidebar-toggle" aria-label="Toggle navigation"
+    style:display={sidebarOpen ? 'none' : null}
+    onclick={() => sidebarOpen = !sidebarOpen}>☰</button>
 
   <div class="sidebar-overlay" class:open={sidebarOpen} onclick={close}></div>
 
