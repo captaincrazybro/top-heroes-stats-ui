@@ -29,6 +29,9 @@
     <a href="/roster" class="sidebar-link" class:active={$page.url.pathname === '/roster'} onclick={close}>
       🛡 Guild Roster
     </a>
+    <a href="/guild-rankings" class="sidebar-link" class:active={$page.url.pathname === '/guild-rankings'} onclick={close}>
+      📋 Guild Rankings
+    </a>
   </nav>
 
   <main class="main-content">
