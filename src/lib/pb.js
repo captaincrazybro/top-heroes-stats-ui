@@ -44,7 +44,7 @@ export async function getRecords(eventType, eventStartDate) {
 }
 
 const MEMBERS_COLLECTION = 'topHeroesGuildRoster';
-const MEMBERS_FIELDS = 'id,player_name,rank,level,castle_level,influence,main_queue_influence,main_queue_faction,last_online,updated';
+const MEMBERS_FIELDS = 'id,player_name,rank,level,castle_level,influence,main_queue_influence,main_queue_faction,last_online,updated,recent_ranked_match_ranking,timezone,langauge';
 
 export async function getRosterMembers() {
   const params = new URLSearchParams({
