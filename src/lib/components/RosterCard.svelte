@@ -1,7 +1,11 @@
 <script>
-  import { formatRelativeTime } from '$lib/utils.js';
-
   let { member, variant = 'standard' } = $props();
+
+  function abbrev(n) {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + ' M';
+    if (n >= 1_000) return (n / 1_000).toFixed(1) + ' k';
+    return String(n);
+  }
 
   const FACTION = {
     Horde:  { bg: '#3a1e1e', color: '#ff8060', border: '#6b3030', icon: '⚔' },
@@ -29,12 +33,12 @@
           style="background:{faction.bg};color:{faction.color};border-color:{faction.border};"
         >{faction.icon} {member.main_queue_faction}</span>
       </div>
-      <div class="master-online">Last online: {formatRelativeTime(member.last_online)}</div>
+      <div class="master-online">Last online: {member.last_online}</div>
     </div>
     <div class="master-influence">
       <div class="inf-label">Influence</div>
-      <div class="inf-value">{member.influence.toLocaleString()}</div>
-      <div class="mq-value">MQ: {member.main_queue_influence.toLocaleString()}</div>
+      <div class="inf-value">{abbrev(member.influence)}</div>
+      <div class="mq-value">MQ: {abbrev(member.main_queue_influence)}</div>
     </div>
   </div>
 {:else}
@@ -44,15 +48,15 @@
     <div class="card-stats">
       <div><div class="stat-label">Level</div><div class="stat-val">{member.level}</div></div>
       <div><div class="stat-label">Castle</div><div class="stat-val">{member.castle_level}</div></div>
-      <div><div class="stat-label">Influence</div><div class="stat-val green">{member.influence.toLocaleString()}</div></div>
-      <div><div class="stat-label">MQ Inf.</div><div class="stat-val green">{member.main_queue_influence.toLocaleString()}</div></div>
+      <div><div class="stat-label">Influence</div><div class="stat-val green">{abbrev(member.influence)}</div></div>
+      <div><div class="stat-label">MQ. Influence</div><div class="stat-val green">{abbrev(member.main_queue_influence)}</div></div>
     </div>
     <div class="card-footer">
       <span
         class="faction-badge"
         style="background:{faction.bg};color:{faction.color};border-color:{faction.border};"
       >{faction.icon} {member.main_queue_faction}</span>
-      <span class="last-online">{formatRelativeTime(member.last_online)}</span>
+      <span class="last-online">{member.last_online}</span>
     </div>
   </div>
 {/if}
