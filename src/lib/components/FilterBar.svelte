@@ -39,14 +39,6 @@
     </select>
   </label>
 
-  {#if eventType === 'GR' || eventType === 'KvK'}
-  <label class="toggle-group">
-    Guild rank
-    <input type="checkbox" class="toggle-input" checked={useGuildRank} onchange={e => onGuildRankChange(e.target.checked)} />
-    <span class="toggle-track"></span>
-  </label>
-  {/if}
-
   {#if eventType !== 'GR'}
   <div class="tab-group">
     <span class="tab-label">Day</span>
@@ -60,6 +52,14 @@
       {/each}
     </div>
   </div>
+  {/if}
+
+  {#if eventType === 'GR' || eventType === 'KvK'}
+  <label class="toggle-group">
+    Guild rank
+    <input type="checkbox" class="toggle-input" checked={useGuildRank} onchange={e => onGuildRankChange(e.target.checked)} />
+    <span class="toggle-track"></span>
+  </label>
   {/if}
 </div>
 
