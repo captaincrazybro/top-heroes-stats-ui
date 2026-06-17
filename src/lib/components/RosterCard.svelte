@@ -52,11 +52,11 @@
       <div><div class="stat-label">MQ. Influence</div><div class="stat-val green">{abbrev(member.main_queue_influence)}</div></div>
     </div>
     <div class="card-footer">
+      <span class="last-online">{member.last_online}</span>
       <span
         class="faction-badge"
         style="background:{faction.bg};color:{faction.color};border-color:{faction.border};"
       >{faction.icon} {member.main_queue_faction}</span>
-      <span class="last-online">{member.last_online}</span>
     </div>
   </div>
 {/if}
