@@ -160,8 +160,8 @@
   .stat-val.green { color: #4af87a; }
 
   .card-footer {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     align-items: center;
   }
 
