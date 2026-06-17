@@ -6,8 +6,10 @@
     eventType,
     selectedWeek,
     selectedDay,
+    useGuildRank,
     onSelectionChange,
     onDayChange,
+    onGuildRankChange,
   } = $props();
 
   function formatWeek(raw) {
@@ -37,6 +39,14 @@
     </select>
   </label>
 
+  {#if eventType === 'GR' || eventType === 'KvK'}
+  <label class="toggle-group">
+    Guild rank
+    <input type="checkbox" class="toggle-input" checked={useGuildRank} onchange={e => onGuildRankChange(e.target.checked)} />
+    <span class="toggle-track"></span>
+  </label>
+  {/if}
+
   {#if eventType !== 'GR'}
   <div class="tab-group">
     <span class="tab-label">Day</span>
@@ -54,6 +64,55 @@
 </div>
 
 <style>
+  .toggle-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    user-select: none;
+  }
+
+  .toggle-input { display: none; }
+
+  .toggle-track {
+    width: 32px;
+    height: 18px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 9px;
+    position: relative;
+    margin-top: 6px;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #666;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.15s, background 0.15s;
+  }
+
+  .toggle-input:checked + .toggle-track {
+    background: #f8c34a;
+    border-color: #f8c34a;
+  }
+
+  .toggle-input:checked + .toggle-track::after {
+    transform: translateX(14px);
+    background: #0d0d0d;
+  }
+
   .tab-group {
     display: flex;
     flex-direction: column;

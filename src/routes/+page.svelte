@@ -10,6 +10,7 @@
 	let eventOptions = $state([]);
 	let selectedWeek = $state('');
 	let selectedDay = $state('All');
+	let useGuildRank = $state(false);
 	let allRecords = $state([]);
 	let loading = $state(false);
 	let error = $state(null);
@@ -66,12 +67,17 @@
 		eventType = type;
 		selectedWeek = week;
 		selectedDay = 'All';
+		useGuildRank = false;
 		await loadRecords();
 	}
 
 	function onDayChange(val) {
 		selectedDay = val;
 		updateUrl();
+	}
+
+	function onGuildRankChange(val) {
+		useGuildRank = val;
 	}
 </script>
 
@@ -81,7 +87,9 @@
 	{eventType}
 	{selectedWeek}
 	{selectedDay}
+	{useGuildRank}
 	{onSelectionChange}
 	{onDayChange}
+	{onGuildRankChange}
 />
-<Leaderboard records={filtered} {loading} {error} />
+<Leaderboard records={filtered} {loading} {error} {useGuildRank} />

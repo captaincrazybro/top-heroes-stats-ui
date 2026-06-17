@@ -1,7 +1,7 @@
 <script>
   import { sortRecords } from '$lib/utils.js';
 
-  let { records = [], loading = false, error = null } = $props();
+  let { records = [], loading = false, error = null, useGuildRank = false } = $props();
 
   let sortCol = $state('rank');
   let sortDir = $state('asc');
@@ -40,9 +40,9 @@
         </tr>
       </thead>
       <tbody>
-        {#each sorted as row (row.id)}
+        {#each sorted as row, i (row.id)}
           <tr>
-            <td>{row.rank}</td>
+            <td>{useGuildRank ? i + 1 : row.rank}</td>
             <td>{row.player_name}</td>
             <td>{row.score.toLocaleString()}</td>
           </tr>
