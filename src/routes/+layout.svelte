@@ -30,7 +30,7 @@
       🛡 Guild Roster
     </a>
     <a href="/guild-rankings" class="sidebar-link" class:active={$page.url.pathname === '/guild-rankings'} onclick={close}>
-      📋 Guild Rankings
+      📊 Guild Rankings
     </a>
   </nav>
 
