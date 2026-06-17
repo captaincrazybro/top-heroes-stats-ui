@@ -5,13 +5,6 @@ body {
   color: #e0e0e0;
   font-family: system-ui, sans-serif;
   min-height: 100vh;
-  padding: 2rem;
-}
-
-h1 {
-  font-size: 1.5rem;
-  color: #f8c34a;
-  margin-bottom: 1.5rem;
 }
 
 .filter-bar {
@@ -89,3 +82,108 @@ thead th:last-child { text-align: right; }
 }
 
 .status.error { color: #f87a4a; }
+
+/* ── Sidebar layout ───────────────────────────────────── */
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #111;
+  border-right: 1px solid #1e1e1e;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f8c34a;
+  letter-spacing: .05em;
+  margin-bottom: 16px;
+  padding: 0 12px;
+}
+
+.sidebar-link {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #666;
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.sidebar-link:hover { color: #e0e0e0; background: #1a1a1a; }
+
+.sidebar-link.active {
+  background: #f8c34a;
+  color: #0d0d0d;
+  font-weight: 600;
+}
+
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 100;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #e0e0e0;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 90;
+}
+
+.main-content {
+  padding: 2rem;
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 200px;
+    z-index: 95;
+    height: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-toggle { display: flex; }
+
+  .sidebar-overlay.open { display: block; }
+
+  .main-content { padding: 2rem 1rem; padding-top: 4rem; }
+}

@@ -81,7 +81,6 @@
 	}
 </script>
 
-<h1>Top Heroes Stats</h1>
 <FilterBar
 	{eventOptions}
 	{eventType}
