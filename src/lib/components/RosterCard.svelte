@@ -67,7 +67,7 @@
       </div>
       <div class="modal-body">
         <div class="modal-row">
-          <span class="modal-label">Faction</span>
+          <span class="modal-label">MQ Faction</span>
           <span
             class="faction-badge"
             style="background:{faction.bg};color:{faction.color};border-color:{faction.border};"
@@ -82,12 +82,12 @@
           <span class="modal-val">{member.recent_ranked_match_ranking ?? '—'}</span>
         </div>
         <div class="modal-row">
-          <span class="modal-label">Timezone</span>
-          <span class="modal-val">{member.timezone ?? '—'}</span>
-        </div>
-        <div class="modal-row">
           <span class="modal-label">Language</span>
           <span class="modal-val">{member.language ?? '—'}</span>
+        </div>
+        <div class="modal-row">
+          <span class="modal-label">Timezone</span>
+          <span class="modal-val">{member.timezone ?? '—'}</span>
         </div>
       </div>
     </div>
