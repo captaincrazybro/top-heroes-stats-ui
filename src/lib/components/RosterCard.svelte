@@ -87,7 +87,7 @@
         </div>
         <div class="modal-row">
           <span class="modal-label">Language</span>
-          <span class="modal-val">{member.langauge ?? '—'}</span>
+          <span class="modal-val">{member.language ?? '—'}</span>
         </div>
       </div>
     </div>
