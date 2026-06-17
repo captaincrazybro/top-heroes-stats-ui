@@ -24,7 +24,7 @@
   <nav class="sidebar" class:open={sidebarOpen}>
     <div class="sidebar-title">Top Heroes Stats</div>
     <a href="/" class="sidebar-link" class:active={$page.url.pathname === '/'} onclick={close}>
-      📊 Leaderboard
+      🏆 Event Results
     </a>
     <a href="/roster" class="sidebar-link" class:active={$page.url.pathname === '/roster'} onclick={close}>
       🛡 Guild Roster
