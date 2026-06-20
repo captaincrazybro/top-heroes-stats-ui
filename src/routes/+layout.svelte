@@ -24,10 +24,10 @@
   <nav class="sidebar" class:open={sidebarOpen}>
     <div class="sidebar-title">HGS Guild Hub</div>
     <a href="/" class="sidebar-link" class:active={$page.url.pathname === '/'} onclick={close}>
-      🏆 Event Results
-    </a>
-    <a href="/roster" class="sidebar-link" class:active={$page.url.pathname === '/roster'} onclick={close}>
       🛡 Guild Roster
+    </a>
+    <a href="/event-results" class="sidebar-link" class:active={$page.url.pathname === '/event-results'} onclick={close}>
+      🏆 Event Results
     </a>
     <a href="/guild-rankings" class="sidebar-link" class:active={$page.url.pathname === '/guild-rankings'} onclick={close}>
       📊 Guild Rankings
