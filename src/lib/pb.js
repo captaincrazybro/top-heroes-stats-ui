@@ -61,6 +61,22 @@ export async function getRosterMembers() {
   return { members: data.items, lastUpdated };
 }
 
+const LAYOUTS_COLLECTION = 'topHeroesCastleLayouts';
+
+export async function getCastleLayouts() {
+  const params = new URLSearchParams({
+    sort: '-created',
+    perPage: '500',
+  });
+  const data = await pbFetch(`/collections/${LAYOUTS_COLLECTION}/records?${params}`);
+  return data.items;
+}
+
+export function getLayoutImageUrl(record) {
+  if (!record?.image) return null;
+  return `${PUBLIC_PB_URL}/api/files/${LAYOUTS_COLLECTION}/${record.id}/${record.image}`;
+}
+
 export async function getPastMembers() {
   const params = new URLSearchParams({
     fields: MEMBERS_FIELDS,

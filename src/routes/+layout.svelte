@@ -35,6 +35,9 @@
     <a href="/past-members" class="sidebar-link" class:active={$page.url.pathname === '/past-members'} onclick={close}>
       👤 Past Members
     </a>
+    <a href="/castle-layout" class="sidebar-link" class:active={$page.url.pathname === '/castle-layout'} onclick={close}>
+      🏰 Castle Layout
+    </a>
     <a href="https://docs.google.com/forms/d/e/1FAIpQLScxhE05Z5XxCwatVZDtTejMmNdfejLloPrXQ76M8NwwxJ6ugQ/viewform?usp=sharing&ouid=108080413243526511864" class="sidebar-link" target="_blank" rel="noopener noreferrer" onclick={close}>
       📝 New Members Form
     </a>
