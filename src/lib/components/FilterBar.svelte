@@ -54,7 +54,7 @@
   </div>
   {/if}
 
-  {#if eventType === 'GR' || eventType === 'KvK' || eventType === 'FB'}
+  {#if eventType === 'GR' || eventType === 'KvK' || eventType === 'FB' || eventType === 'TL'}
   <label class="toggle-group">
     Guild rank
     <input type="checkbox" class="toggle-input" checked={useGuildRank} onchange={e => onGuildRankChange(e.target.checked)} />
