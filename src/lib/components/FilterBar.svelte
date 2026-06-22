@@ -39,7 +39,7 @@
     </select>
   </label>
 
-  {#if eventType !== 'GR'}
+  {#if eventType !== 'GR' && eventType !== 'FB'}
   <div class="tab-group">
     <span class="tab-label">Day</span>
     <div class="tabs">
@@ -54,7 +54,7 @@
   </div>
   {/if}
 
-  {#if eventType === 'GR' || eventType === 'KvK'}
+  {#if eventType === 'GR' || eventType === 'KvK' || eventType === 'FB'}
   <label class="toggle-group">
     Guild rank
     <input type="checkbox" class="toggle-input" checked={useGuildRank} onchange={e => onGuildRankChange(e.target.checked)} />
