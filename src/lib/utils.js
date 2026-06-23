@@ -1,17 +1,23 @@
 const DAY_NAMES = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const GAME_DAY_OFFSET_MS = 2 * 3_600_000; // game day resets at 02:00 UTC
+
+function gameDate(dateStr) {
+  return new Date(new Date(dateStr).getTime() - GAME_DAY_OFFSET_MS)
+    .toISOString()
+    .slice(0, 10);
+}
 
 export function filterByDay(records, day) {
   if (records.length === 0) return [];
   if (day === 'All') {
-    const latestDate = records
-      .map(r => r.captured_at.slice(0, 10))
-      .sort()
-      .at(-1);
-    return records.filter(r => r.captured_at.startsWith(latestDate));
+    const latestDate = records.map(r => gameDate(r.captured_at)).sort().at(-1);
+    return records.filter(r => gameDate(r.captured_at) === latestDate);
   }
   const targetIndex = DAY_NAMES.indexOf(day);
   if (targetIndex === -1) return [];
-  return records.filter(r => new Date(r.captured_at).getUTCDay() === targetIndex);
+  return records.filter(r =>
+    new Date(new Date(r.captured_at).getTime() - GAME_DAY_OFFSET_MS).getUTCDay() === targetIndex
+  );
 }
 
 export function sortRecords(records, column, direction) {

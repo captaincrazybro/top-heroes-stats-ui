@@ -1,7 +1,8 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { filterByDay, sortRecords, formatRelativeTime } from './utils.js';
 
-// Mon Jun 8 = UTC day 1, Tue Jun 9 = UTC day 2
+// Game day resets at 02:00 UTC. Records before 02:00 UTC belong to the previous game day.
+// Mon Jun 8 game day = 02:00 Jun 8 UTC through 01:59 Jun 9 UTC
 const RECORDS = [
   { rank: 1, player_name: 'Alice', score: 3000, captured_at: '2026-06-08T02:50:00.000Z' },
   { rank: 2, player_name: 'Bob',   score: 2000, captured_at: '2026-06-08T02:50:00.000Z' },
@@ -10,22 +11,48 @@ const RECORDS = [
 ];
 
 describe('filterByDay', () => {
-  test('All returns only records from the most recent captured_at date', () => {
+  test('All returns only records from the most recent game day', () => {
     const result = filterByDay(RECORDS, 'All');
     expect(result).toHaveLength(2);
     expect(result.every(r => r.captured_at.startsWith('2026-06-09'))).toBe(true);
   });
 
-  test('Mon returns records captured on Monday UTC', () => {
+  test('Mon returns records captured during Monday game day', () => {
     const result = filterByDay(RECORDS, 'Mon');
     expect(result).toHaveLength(2);
     expect(result.every(r => r.captured_at.startsWith('2026-06-08'))).toBe(true);
   });
 
-  test('Tue returns records captured on Tuesday UTC', () => {
+  test('Tue returns records captured during Tuesday game day', () => {
     const result = filterByDay(RECORDS, 'Tue');
     expect(result).toHaveLength(2);
     expect(result.every(r => r.captured_at.startsWith('2026-06-09'))).toBe(true);
+  });
+
+  test('records before 02:00 UTC belong to the previous game day', () => {
+    // 01:30 UTC Tuesday is still Monday game day
+    const earlyRecords = [
+      { rank: 1, player_name: 'Alice', score: 3000, captured_at: '2026-06-09T01:30:00.000Z' },
+    ];
+    expect(filterByDay(earlyRecords, 'Mon')).toHaveLength(1);
+    expect(filterByDay(earlyRecords, 'Tue')).toHaveLength(0);
+  });
+
+  test('records at exactly 02:00 UTC start the new game day', () => {
+    const resetRecords = [
+      { rank: 1, player_name: 'Alice', score: 3000, captured_at: '2026-06-09T02:00:00.000Z' },
+    ];
+    expect(filterByDay(resetRecords, 'Tue')).toHaveLength(1);
+    expect(filterByDay(resetRecords, 'Mon')).toHaveLength(0);
+  });
+
+  test('All groups pre-02:00 UTC records with previous game day', () => {
+    // Mix of 01:30 UTC Tue (game Mon) and 03:00 UTC Mon (game Mon) — same game day
+    const mixed = [
+      { rank: 1, player_name: 'Alice', score: 3000, captured_at: '2026-06-08T03:00:00.000Z' },
+      { rank: 1, player_name: 'Alice', score: 3500, captured_at: '2026-06-09T01:30:00.000Z' },
+    ];
+    expect(filterByDay(mixed, 'All')).toHaveLength(2);
   });
 
   test('returns empty array for empty input on All', () => {
