@@ -41,13 +41,17 @@
       </thead>
       <tbody>
         {#each sorted as row, i (row.id)}
-          <tr>
-            <td>{useGuildRank ? i + 1 : row.rank}</td>
+          <tr class:not-in-event={row.notInEvent}>
+            <td>{useGuildRank ? i + 1 : (row.notInEvent ? '—' : row.rank)}</td>
             <td>{row.player_name}</td>
-            <td>{row.score.toLocaleString()}</td>
+            <td>{row.notInEvent ? '—' : row.score.toLocaleString()}</td>
           </tr>
         {/each}
       </tbody>
     </table>
   {/if}
 </div>
+
+<style>
+  .not-in-event td { color: #555; }
+</style>

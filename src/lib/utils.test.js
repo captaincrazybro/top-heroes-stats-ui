@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { filterByDay, sortRecords, formatRelativeTime } from './utils.js';
+import { filterByDay, sortRecords, formatRelativeTime, similarity, matchRosterToEvent } from './utils.js';
 
 // Game day resets at 02:00 UTC. Records before 02:00 UTC belong to the previous game day.
 // Mon Jun 8 game day = 02:00 Jun 8 UTC through 01:59 Jun 9 UTC
@@ -99,6 +99,111 @@ describe('sortRecords', () => {
     const original = records.map(r => ({ ...r }));
     sortRecords(records, 'rank', 'desc');
     expect(records).toEqual(original);
+  });
+});
+
+describe('similarity', () => {
+  test('identical strings return 1', () => {
+    expect(similarity('Alice', 'Alice')).toBe(1);
+  });
+
+  test('case insensitive', () => {
+    expect(similarity('alice', 'ALICE')).toBe(1);
+  });
+
+  test('trims whitespace', () => {
+    expect(similarity(' alice ', 'alice')).toBe(1);
+  });
+
+  test('one character difference scores high', () => {
+    expect(similarity('Alicee', 'Alice')).toBeGreaterThan(0.8);
+  });
+
+  test('completely different strings score low', () => {
+    expect(similarity('Alice', 'Zxqrst')).toBeLessThan(0.4);
+  });
+
+  test('empty strings return 1', () => {
+    expect(similarity('', '')).toBe(1);
+  });
+
+  test('ignores emojis', () => {
+    expect(similarity('🔥Alice', 'Alice')).toBe(1);
+  });
+
+  test('ignores whitespace', () => {
+    expect(similarity('Alice Smith', 'AliceSmith')).toBe(1);
+  });
+
+  test('ignores special characters', () => {
+    expect(similarity('Alice_99!', 'Alice99')).toBe(1);
+  });
+
+  test('preserves accented letters', () => {
+    expect(similarity('Álice', 'álice')).toBe(1);
+  });
+});
+
+describe('matchRosterToEvent', () => {
+  // 'Bobb' vs 'Bobby': editDistance=1, similarity=0.8 — above threshold
+  // 'Charlie' has no close match — below threshold
+  const roster = [
+    { id: 'r1', player_name: 'Alice' },
+    { id: 'r2', player_name: 'Bobb' },
+    { id: 'r3', player_name: 'Charlie' },
+  ];
+  const events = [
+    { id: 'e1', player_name: 'Alice', score: 3000, rank: 1 },
+    { id: 'e2', player_name: 'Bobby', score: 2000, rank: 2 },
+  ];
+
+  test('exact match is found', () => {
+    const result = matchRosterToEvent(roster, events);
+    const alice = result.find(m => m.member.id === 'r1');
+    expect(alice.eventRecord.id).toBe('e1');
+  });
+
+  test('fuzzy match finds name with one character difference', () => {
+    const result = matchRosterToEvent(roster, events);
+    const bobb = result.find(m => m.member.id === 'r2');
+    expect(bobb.eventRecord.id).toBe('e2');
+  });
+
+  test('unmatched member has null eventRecord', () => {
+    const result = matchRosterToEvent(roster, events);
+    const charlie = result.find(m => m.member.id === 'r3');
+    expect(charlie.eventRecord).toBeNull();
+  });
+
+  test('each event record matched to at most one roster member', () => {
+    const result = matchRosterToEvent(roster, events);
+    const matchedEventIds = result
+      .filter(m => m.eventRecord)
+      .map(m => m.eventRecord.id);
+    const unique = new Set(matchedEventIds);
+    expect(unique.size).toBe(matchedEventIds.length);
+  });
+
+  test('returns same length as roster', () => {
+    const result = matchRosterToEvent(roster, events);
+    expect(result).toHaveLength(roster.length);
+  });
+
+  test('no match when roster is empty', () => {
+    expect(matchRosterToEvent([], events)).toEqual([]);
+  });
+
+  test('all unmatched when event list is empty', () => {
+    const result = matchRosterToEvent(roster, []);
+    expect(result.every(m => m.eventRecord === null)).toBe(true);
+  });
+
+  test('name below threshold is not matched', () => {
+    const result = matchRosterToEvent(
+      [{ id: 'r1', player_name: 'Zyx' }],
+      [{ id: 'e1', player_name: 'Alice', score: 100, rank: 1 }],
+    );
+    expect(result[0].eventRecord).toBeNull();
   });
 });
 

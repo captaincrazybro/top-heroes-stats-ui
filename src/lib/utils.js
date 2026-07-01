@@ -20,6 +20,50 @@ export function filterByDay(records, day) {
   );
 }
 
+function editDistance(a, b) {
+  const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0];
+    row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = row[j];
+      row[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, row[j], row[j - 1]);
+      prev = tmp;
+    }
+  }
+  return row[b.length];
+}
+
+function normalize(s) {
+  return s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+}
+
+export function similarity(a, b) {
+  const s1 = normalize(a);
+  const s2 = normalize(b);
+  if (s1 === s2) return 1;
+  const maxLen = Math.max(s1.length, s2.length);
+  if (maxLen === 0) return 1;
+  return (maxLen - editDistance(s1, s2)) / maxLen;
+}
+
+export function matchRosterToEvent(rosterMembers, eventRecords, threshold = 0.75) {
+  const usedIds = new Set();
+  return rosterMembers.map(member => {
+    let best = 0, bestRecord = null;
+    for (const record of eventRecords) {
+      if (usedIds.has(record.id)) continue;
+      const s = similarity(member.player_name, record.player_name);
+      if (s > best) { best = s; bestRecord = record; }
+    }
+    if (best >= threshold && bestRecord) {
+      usedIds.add(bestRecord.id);
+      return { member, eventRecord: bestRecord };
+    }
+    return { member, eventRecord: null };
+  });
+}
+
 export function sortRecords(records, column, direction) {
   const sorted = [...records].sort((a, b) => {
     const aVal = a[column];

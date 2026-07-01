@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { getEventOptions, getRecords } from '$lib/pb.js';
-	import { filterByDay } from '$lib/utils.js';
+	import { getEventOptions, getRecords, getRosterMembers } from '$lib/pb.js';
+	import { filterByDay, matchRosterToEvent } from '$lib/utils.js';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import Leaderboard from '$lib/components/Leaderboard.svelte';
 
@@ -11,11 +11,43 @@
 	let selectedWeek = $state('');
 	let selectedDay = $state('All');
 	let useGuildRank = $state(false);
+	let crossRef = $state(false);
 	let allRecords = $state([]);
 	let loading = $state(false);
 	let error = $state(null);
+	let rosterMembers = $state([]);
+	let rosterLoading = $state(false);
 
 	const filtered = $derived(filterByDay(allRecords, selectedDay));
+
+	const displayRecords = $derived.by(() => {
+		if (!crossRef || rosterMembers.length === 0) return filtered;
+		const matches = matchRosterToEvent(rosterMembers, filtered);
+		const combined = [...filtered];
+		let extra = filtered.reduce((max, r) => Math.max(max, r.rank ?? 0), 0);
+		for (const { member, eventRecord } of matches) {
+			if (!eventRecord) {
+				combined.push({
+					id: `roster-${member.id}`,
+					player_name: member.player_name,
+					score: 0,
+					rank: ++extra,
+					notInEvent: true,
+				});
+			}
+		}
+		return combined;
+	});
+
+	$effect(() => {
+		if (crossRef && rosterMembers.length === 0 && !rosterLoading) {
+			rosterLoading = true;
+			getRosterMembers()
+				.then(({ members }) => { rosterMembers = members; })
+				.catch(() => {})
+				.finally(() => { rosterLoading = false; });
+		}
+	});
 
 	function updateUrl() {
 		const params = new URLSearchParams({ event: eventType, week: selectedWeek, day: selectedDay });
@@ -79,6 +111,10 @@
 	function onGuildRankChange(val) {
 		useGuildRank = val;
 	}
+
+	function onCrossRefChange(val) {
+		crossRef = val;
+	}
 </script>
 
 <FilterBar
@@ -87,8 +123,15 @@
 	{selectedWeek}
 	{selectedDay}
 	{useGuildRank}
+	{crossRef}
 	{onSelectionChange}
 	{onDayChange}
 	{onGuildRankChange}
+	{onCrossRefChange}
 />
-<Leaderboard records={filtered} {loading} {error} {useGuildRank} />
+<Leaderboard
+	records={displayRecords}
+	loading={loading || (crossRef && rosterLoading)}
+	{error}
+	{useGuildRank}
+/>

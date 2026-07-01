@@ -7,9 +7,11 @@
     selectedWeek,
     selectedDay,
     useGuildRank,
+    crossRef,
     onSelectionChange,
     onDayChange,
     onGuildRankChange,
+    onCrossRefChange,
   } = $props();
 
   function formatWeek(raw) {
@@ -61,6 +63,12 @@
     <span class="toggle-track"></span>
   </label>
   {/if}
+
+  <label class="toggle-group">
+    Guild match
+    <input type="checkbox" class="toggle-input" checked={crossRef} onchange={e => onCrossRefChange(e.target.checked)} />
+    <span class="toggle-track"></span>
+  </label>
 </div>
 
 <style>
