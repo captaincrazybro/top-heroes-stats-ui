@@ -21,39 +21,110 @@
   function onKeydown(e) {
     if (e.key === 'Escape') showModal = false;
   }
+
+  const BUFFS = [
+    { key: 'wings', emoji: '🪽', label: 'Castle Wings' },
+    { key: 'aura',  emoji: '✨', label: 'Castle Aura' },
+    { key: 'chess', emoji: '♟', label: 'Chess Set Buffs' },
+  ];
+
+  const ACTIVITY_LEVELS = { hyperactive: 5, active: 4, daily: 3, weekly: 2, none: 0 };
+  const ACTIVITY_COLORS = {
+    hyperactive: '#4af87a',
+    active:      '#4af8c0',
+    daily:       '#f8c34a',
+    weekly:      '#f87a4a',
+    none:        '#252525',
+  };
+
+  const activeBuffs = $derived([
+    ...BUFFS.filter(b => member.guild_member_buffs?.includes(b.key)),
+    ...(member.has_aoe_buffs ? [{ key: 'aoe', emoji: '🌀', label: 'Area of Effect Buffs' }] : []),
+  ]);
+
+  const activityLevel = $derived(ACTIVITY_LEVELS[member.chat_activity] ?? 0);
+  const activityColor = $derived(ACTIVITY_COLORS[member.chat_activity] ?? '#252525');
 </script>
 
 {#if variant === 'master'}
-  <div class="master-card" role="button" tabindex="0" onclick={() => showModal = true} onkeydown={onKeydown}>
-    <div class="master-badge">
-      <span class="master-role">R5</span>
-      <span class="master-crown">👑</span>
-    </div>
-    <div class="master-info">
-      <div class="master-name">{member.player_name}</div>
-      <div class="master-meta">
-        <span>Level <strong>{member.level}</strong></span>
-        <span>Castle <strong>{member.castle_level}</strong></span>
+  <div class="master-card" style="overflow:hidden;" role="button" tabindex="0" onclick={() => showModal = true} onkeydown={onKeydown}>
+    <div class="master-card-content">
+      <div class="master-badge">
+        <span class="master-role">R5</span>
+        <span class="master-crown">👑</span>
       </div>
-      <div class="master-online">Last online: {member.last_online}</div>
-      <div class="card-hint">Click card for more details…</div>
+      <div class="master-info">
+        <div class="master-name">{member.player_name}</div>
+        <div class="master-meta">
+          <span>Level <strong>{member.level}</strong></span>
+          <span>Castle <strong>{member.castle_level}</strong></span>
+        </div>
+        <div class="master-online">Last online: {member.last_online}</div>
+        <div class="card-hint">Click card for more details…</div>
+      </div>
+      <div class="master-influence">
+        <div class="inf-label">Influence</div>
+        <div class="inf-value">{abbrev(member.influence)}</div>
+      </div>
     </div>
-    <div class="master-influence">
-      <div class="inf-label">Influence</div>
-      <div class="inf-value">{abbrev(member.influence)}</div>
+    <div class="status-strip">
+      <div class="strip-col">
+        <div class="strip-label">Buffs</div>
+        <div class="strip-buffs">
+          {#if activeBuffs.length === 0}
+            <span class="no-buffs">—</span>
+          {:else}
+            {#each activeBuffs as buff (buff.key)}
+              <span class="buff-icon" title={buff.label}>{buff.emoji}</span>
+            {/each}
+          {/if}
+        </div>
+      </div>
+      <div class="strip-col">
+        <div class="strip-label">Activity</div>
+        <div class="strip-signal">
+          {#each [3, 6, 9, 12, 14] as h, i}
+            <div class="signal-pip" style="height:{h}px;background:{i < activityLevel ? activityColor : '#252525'};"></div>
+          {/each}
+        </div>
+      </div>
     </div>
   </div>
 {:else}
-  <div class="roster-card" style="border-top-color:{topBorder};" role="button" tabindex="0" onclick={() => showModal = true} onkeydown={onKeydown}>
-    <div class="card-name">{member.player_name}</div>
-    <div class="card-stats">
-      <div><div class="stat-label">Level</div><div class="stat-val">{member.level}</div></div>
-      <div><div class="stat-label">Castle</div><div class="stat-val">{member.castle_level}</div></div>
-      <div><div class="stat-label">Influence</div><div class="stat-val green">{abbrev(member.influence)}</div></div>
-      <div><div class="stat-label hint-label">Click card for more details…</div></div>
+  <div class="roster-card" style="border-top-color:{topBorder};overflow:hidden;" role="button" tabindex="0" onclick={() => showModal = true} onkeydown={onKeydown}>
+    <div class="card-content">
+      <div class="card-name">{member.player_name}</div>
+      <div class="card-stats">
+        <div><div class="stat-label">Level</div><div class="stat-val">{member.level}</div></div>
+        <div><div class="stat-label">Castle</div><div class="stat-val">{member.castle_level}</div></div>
+        <div><div class="stat-label">Influence</div><div class="stat-val green">{abbrev(member.influence)}</div></div>
+        <div><div class="stat-label hint-label">Click card for more details…</div></div>
+      </div>
+      <div class="card-footer">
+        <span class="last-online">{member.last_online}</span>
+      </div>
     </div>
-    <div class="card-footer">
-      <span class="last-online">{member.last_online}</span>
+    <div class="status-strip">
+      <div class="strip-col">
+        <div class="strip-label">Buffs</div>
+        <div class="strip-buffs">
+          {#if activeBuffs.length === 0}
+            <span class="no-buffs">—</span>
+          {:else}
+            {#each activeBuffs as buff (buff.key)}
+              <span class="buff-icon" title={buff.label}>{buff.emoji}</span>
+            {/each}
+          {/if}
+        </div>
+      </div>
+      <div class="strip-col">
+        <div class="strip-label">Activity</div>
+        <div class="strip-signal">
+          {#each [3, 6, 9, 12, 14] as h, i}
+            <div class="signal-pip" style="height:{h}px;background:{i < activityLevel ? activityColor : '#252525'};"></div>
+          {/each}
+        </div>
+      </div>
     </div>
   </div>
 {/if}
@@ -97,18 +168,23 @@
 <style>
   /* ── Guild Master card ───────────────────────── */
   .master-card {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 20px;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
     max-width: 520px;
     background: linear-gradient(135deg, #1f1a00, #1a1a1a);
     border: 1px solid #5a4500;
     border-radius: 12px;
-    padding: 20px 24px;
     box-shadow: 0 0 24px rgba(248, 195, 74, 0.08);
     cursor: pointer;
     transition: box-shadow 0.15s;
+  }
+
+  .master-card-content {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: center;
+    padding: 20px 24px;
   }
 
   .master-card:hover {
@@ -170,15 +246,21 @@
     border: 1px solid #2a2a2a;
     border-top: 3px solid transparent;
     border-radius: 8px;
-    padding: 14px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
     cursor: pointer;
     transition: background 0.15s;
   }
 
   .roster-card:hover { background: #202020; }
+
+  .card-content {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
 
   .card-name { font-size: 15px; font-weight: 700; color: #e0e0e0; }
 
@@ -274,5 +356,54 @@
     border-radius: 12px;
     border: 1px solid;
     font-weight: 500;
+  }
+
+  /* ── Status strip ──────────────────────────────────────── */
+  .status-strip {
+    display: flex;
+    border-top: 1px solid #1f1f1f;
+    background: #141414;
+    padding: 7px 13px;
+  }
+
+  .strip-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .strip-label {
+    font-size: 8px;
+    color: #2e2e2e;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+  }
+
+  .strip-buffs {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    min-height: 16px;
+  }
+
+  .buff-icon {
+    font-size: 13px;
+    line-height: 1;
+    cursor: help;
+  }
+
+  .no-buffs { font-size: 10px; color: #252525; }
+
+  .strip-signal {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+  }
+
+  .signal-pip {
+    width: 4px;
+    border-radius: 1px 1px 0 0;
   }
 </style>
