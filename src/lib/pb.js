@@ -2,7 +2,6 @@ import { PUBLIC_PB_URL } from '$env/static/public';
 
 const COLLECTION = 'topHeroesEventRecords';
 
-
 async function pbFetch(path) {
   const res = await fetch(`${PUBLIC_PB_URL}/api${path}`);
   if (!res.ok) {
