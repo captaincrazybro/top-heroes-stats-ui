@@ -67,6 +67,7 @@
         <th onclick={() => toggleSort('castle_level')}>Castle{indicator('castle_level')}</th>
         <th onclick={() => toggleSort('main_queue_influence')}>MQ. Influence{indicator('main_queue_influence')}</th>
         <th onclick={() => toggleSort('main_queue_faction')}>Faction{indicator('main_queue_faction')}</th>
+        <th onclick={() => toggleSort('chat_activity')}>Activity{indicator('chat_activity')}</th>
       </tr>
     </thead>
     <tbody>
@@ -78,6 +79,7 @@
           <td>{member.castle_level}</td>
           <td>{abbrev(member.main_queue_influence)}</td>
           <td style="color:{FACTION_COLOR[member.main_queue_faction] ?? '#888'};">{member.main_queue_faction}</td>
+          <td class="activity-cell">{member.chat_activity ?? '—'}</td>
         </tr>
       {/each}
     </tbody>
@@ -86,4 +88,5 @@
 
 <style>
   .rank-col { cursor: default; }
+  .activity-cell { text-transform: capitalize; }
 </style>

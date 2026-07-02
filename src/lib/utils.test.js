@@ -100,6 +100,28 @@ describe('sortRecords', () => {
     sortRecords(records, 'rank', 'desc');
     expect(records).toEqual(original);
   });
+
+  test('sorts chat_activity by activity level descending (hyperactive first)', () => {
+    const activity = [
+      { id: '1', player_name: 'A', chat_activity: 'weekly' },
+      { id: '2', player_name: 'B', chat_activity: 'hyperactive' },
+      { id: '3', player_name: 'C', chat_activity: 'daily' },
+      { id: '4', player_name: 'D', chat_activity: 'none' },
+      { id: '5', player_name: 'E', chat_activity: 'active' },
+    ];
+    const result = sortRecords(activity, 'chat_activity', 'desc');
+    expect(result.map(r => r.chat_activity)).toEqual(['hyperactive', 'active', 'daily', 'weekly', 'none']);
+  });
+
+  test('sorts chat_activity ascending (none first)', () => {
+    const activity = [
+      { id: '1', player_name: 'A', chat_activity: 'active' },
+      { id: '2', player_name: 'B', chat_activity: 'none' },
+      { id: '3', player_name: 'C', chat_activity: 'hyperactive' },
+    ];
+    const result = sortRecords(activity, 'chat_activity', 'asc');
+    expect(result.map(r => r.chat_activity)).toEqual(['none', 'active', 'hyperactive']);
+  });
 });
 
 describe('similarity', () => {

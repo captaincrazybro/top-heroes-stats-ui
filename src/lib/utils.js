@@ -64,10 +64,15 @@ export function matchRosterToEvent(rosterMembers, eventRecords, threshold = 0.75
   });
 }
 
+const ACTIVITY_ORDER = { hyperactive: 4, active: 3, daily: 2, weekly: 1, none: 0 };
+
 export function sortRecords(records, column, direction) {
   const sorted = [...records].sort((a, b) => {
     const aVal = a[column];
     const bVal = b[column];
+    if (column === 'chat_activity') {
+      return (ACTIVITY_ORDER[aVal] ?? -1) - (ACTIVITY_ORDER[bVal] ?? -1);
+    }
     if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
     return String(aVal).localeCompare(String(bVal));
   });
