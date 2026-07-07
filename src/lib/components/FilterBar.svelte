@@ -8,10 +8,12 @@
     selectedDay,
     useGuildRank,
     crossRef,
+    showOtherGuilds,
     onSelectionChange,
     onDayChange,
     onGuildRankChange,
     onCrossRefChange,
+    onOtherGuildsChange,
   } = $props();
 
   function formatWeek(raw) {
@@ -56,7 +58,7 @@
   </div>
   {/if}
 
-  {#if eventType === 'GR' || eventType === 'KvK' || eventType === 'FB' || eventType === 'TL'}
+  {#if eventType === 'GR' || eventType === 'KvK' || eventType === 'FB' || eventType === 'TL' || eventType === 'GAR'}
   <label class="toggle-group">
     Guild rank
     <input type="checkbox" class="toggle-input" checked={useGuildRank} onchange={e => onGuildRankChange(e.target.checked)} />
@@ -67,6 +69,12 @@
   <label class="toggle-group">
     Guild match
     <input type="checkbox" class="toggle-input" checked={crossRef} onchange={e => onCrossRefChange(e.target.checked)} />
+    <span class="toggle-track"></span>
+  </label>
+
+  <label class="toggle-group">
+    Other guilds
+    <input type="checkbox" class="toggle-input" checked={showOtherGuilds} onchange={e => onOtherGuildsChange(e.target.checked)} />
     <span class="toggle-track"></span>
   </label>
 </div>

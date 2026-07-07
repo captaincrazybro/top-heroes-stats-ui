@@ -1,7 +1,7 @@
 <script>
   import { sortRecords } from '$lib/utils.js';
 
-  let { records = [], loading = false, error = null, useGuildRank = false } = $props();
+  let { records = [], loading = false, error = null, useGuildRank = false, showGuild = false } = $props();
 
   let sortCol = $state('rank');
   let sortDir = $state('asc');
@@ -35,6 +35,7 @@
       <thead>
         <tr>
           <th onclick={() => toggleSort('rank')}>{useGuildRank ? 'Guild Rank' : 'Event Rank'}{indicator('rank')}</th>
+          {#if showGuild}<th onclick={() => toggleSort('guild_tag')}>Guild{indicator('guild_tag')}</th>{/if}
           <th onclick={() => toggleSort('player_name')}>Player{indicator('player_name')}</th>
           <th onclick={() => toggleSort('score')}>Score{indicator('score')}</th>
         </tr>
@@ -43,6 +44,7 @@
         {#each sorted as row, i (row.id)}
           <tr class:not-in-event={row.notInEvent}>
             <td>{useGuildRank ? i + 1 : (row.notInEvent ? '—' : row.rank)}</td>
+            {#if showGuild}<td class="guild-cell">{row.guild_tag ?? '—'}</td>{/if}
             <td>{row.player_name}</td>
             <td>{row.notInEvent ? '—' : row.score.toLocaleString()}</td>
           </tr>
@@ -54,4 +56,5 @@
 
 <style>
   .not-in-event td { color: #555; }
+  .guild-cell { color: #888; font-size: 0.85em; }
 </style>

@@ -1,6 +1,7 @@
 import { PUBLIC_PB_URL } from '$env/static/public';
 
 const COLLECTION = 'topHeroesEventRecords';
+export const DEFAULT_GUILD = 'HGS';
 
 async function pbFetch(path) {
   const res = await fetch(`${PUBLIC_PB_URL}/api${path}`);
@@ -33,9 +34,19 @@ export async function getEventOptions() {
     });
 }
 
-export async function getRecords(eventType, eventStartDate) {
+export async function getRecords(eventType, eventStartDate, guild = DEFAULT_GUILD) {
   const params = new URLSearchParams({
-    filter: `event_type='${eventType}'&&event_start_date~'${eventStartDate}'`,
+    filter: `event_type='${eventType}'&&event_start_date~'${eventStartDate}'&&guild_tag='${guild}'`,
+    sort: 'rank',
+    perPage: '500',
+  });
+  const data = await pbFetch(`/collections/${COLLECTION}/records?${params}`);
+  return data.items;
+}
+
+export async function getOtherGuildRecords(eventType, eventStartDate, excludeGuild = DEFAULT_GUILD) {
+  const params = new URLSearchParams({
+    filter: `event_type='${eventType}'&&event_start_date~'${eventStartDate}'&&guild_tag!='${excludeGuild}'`,
     sort: 'rank',
     perPage: '500',
   });

@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { getEventOptions, getRecords, getRosterMembers } from '$lib/pb.js';
+	import { getEventOptions, getRecords, getOtherGuildRecords, getRosterMembers } from '$lib/pb.js';
 	import { filterByDay, matchRosterToEvent } from '$lib/utils.js';
 	import FilterBar from '$lib/components/FilterBar.svelte';
 	import Leaderboard from '$lib/components/Leaderboard.svelte';
@@ -12,6 +12,7 @@
 	let selectedDay = $state('All');
 	let useGuildRank = $state(false);
 	let crossRef = $state(false);
+	let showOtherGuilds = $state(false);
 	let allRecords = $state([]);
 	let loading = $state(false);
 	let error = $state(null);
@@ -59,7 +60,13 @@
 		loading = true;
 		error = null;
 		try {
-			allRecords = await getRecords(eventType, selectedWeek);
+			const hgs = await getRecords(eventType, selectedWeek);
+			if (showOtherGuilds) {
+				const others = await getOtherGuildRecords(eventType, selectedWeek);
+				allRecords = [...hgs, ...others];
+			} else {
+				allRecords = hgs;
+			}
 		} catch (e) {
 			error = e.message;
 			allRecords = [];
@@ -115,6 +122,11 @@
 	function onCrossRefChange(val) {
 		crossRef = val;
 	}
+
+	async function onOtherGuildsChange(val) {
+		showOtherGuilds = val;
+		await loadRecords();
+	}
 </script>
 
 <FilterBar
@@ -124,14 +136,17 @@
 	{selectedDay}
 	{useGuildRank}
 	{crossRef}
+	{showOtherGuilds}
 	{onSelectionChange}
 	{onDayChange}
 	{onGuildRankChange}
 	{onCrossRefChange}
+	{onOtherGuildsChange}
 />
 <Leaderboard
 	records={displayRecords}
 	loading={loading || (crossRef && rosterLoading)}
 	{error}
 	{useGuildRank}
+	showGuild={showOtherGuilds}
 />
