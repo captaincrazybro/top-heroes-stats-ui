@@ -1,3 +1,9 @@
+export function abbrev(n) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + ' M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + ' k';
+  return String(n);
+}
+
 const DAY_NAMES = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const GAME_DAY_OFFSET_MS = 2 * 3_600_000; // game day resets at 02:00 UTC
 

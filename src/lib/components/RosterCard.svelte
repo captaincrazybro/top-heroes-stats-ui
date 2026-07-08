@@ -1,13 +1,9 @@
 <script>
+  import { abbrev } from '$lib/utils.js';
+
   let { member, variant = 'standard', showGuildTag = false } = $props();
 
   let showModal = $state(false);
-
-  function abbrev(n) {
-    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + ' M';
-    if (n >= 1_000) return (n / 1_000).toFixed(1) + ' k';
-    return String(n);
-  }
 
   const FACTION = {
     Horde:  { bg: '#3a1e1e', color: '#ff8060', border: '#6b3030', icon: '⚔' },
