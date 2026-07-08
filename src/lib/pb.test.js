@@ -3,7 +3,7 @@ import { describe, test, expect, vi, afterEach } from 'vitest';
 vi.mock('$env/static/public', () => ({ PUBLIC_PB_URL: 'http://localhost:8090' }));
 
 // Import after mock is registered
-const { getEventOptions, getRecords, getRosterMembers, getPastMembers } = await import('./pb.js');
+const { getEventOptions, getRecords, getRosterMembers, getOtherPlayers } = await import('./pb.js');
 
 function mockFetch(data, status = 200) {
   return vi.fn().mockResolvedValue({
@@ -143,7 +143,7 @@ describe('getRosterMembers', () => {
   });
 });
 
-describe('getPastMembers', () => {
+describe('getOtherPlayers', () => {
   const PAST_ITEM = {
     id: 'past1',
     player_name: 'Charlie', rank: 'R3', level: 70, castle_level: 18,
@@ -151,26 +151,35 @@ describe('getPastMembers', () => {
     main_queue_faction: 'Nature',
     last_online: '2026-06-10 08:00:00.000Z',
     updated: '2026-06-10 08:00:00.000Z',
+    guild_tag: 'RVL',
   };
 
   test('returns members array from PocketBase response', async () => {
     vi.stubGlobal('fetch', mockFetch({ items: [PAST_ITEM] }));
-    const { members } = await getPastMembers();
+    const { members } = await getOtherPlayers();
     expect(members).toEqual([PAST_ITEM]);
   });
 
   test('requests joined=false filter', async () => {
     const fetchMock = mockFetch({ items: [] });
     vi.stubGlobal('fetch', fetchMock);
-    await getPastMembers();
+    await getOtherPlayers();
     const url = decodeURIComponent(fetchMock.mock.calls[0][0]);
     expect(url).toContain('joined=false');
     expect(url).toContain('sort=-influence');
     expect(url).toContain('perPage=500');
   });
 
+  test('requests guild_tag field', async () => {
+    const fetchMock = mockFetch({ items: [] });
+    vi.stubGlobal('fetch', fetchMock);
+    await getOtherPlayers();
+    const url = decodeURIComponent(fetchMock.mock.calls[0][0]);
+    expect(url).toContain('guild_tag');
+  });
+
   test('throws on non-ok response', async () => {
     vi.stubGlobal('fetch', mockFetch({ message: 'Forbidden' }, 403));
-    await expect(getPastMembers()).rejects.toThrow('403');
+    await expect(getOtherPlayers()).rejects.toThrow('403');
   });
 });

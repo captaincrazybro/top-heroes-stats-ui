@@ -55,7 +55,7 @@ export async function getOtherGuildRecords(eventType, eventStartDate, excludeGui
 }
 
 const MEMBERS_COLLECTION = 'topHeroesGuildRoster';
-const MEMBERS_FIELDS = 'id,player_name,rank,level,castle_level,influence,main_queue_influence,main_queue_faction,last_online,updated,recent_ranked_match_ranking,timezone,language,guild_member_buffs,has_aoe_buffs,chat_activity';
+const MEMBERS_FIELDS = 'id,player_name,rank,level,castle_level,influence,main_queue_influence,main_queue_faction,last_online,updated,recent_ranked_match_ranking,timezone,language,guild_member_buffs,has_aoe_buffs,chat_activity,guild_tag';
 
 export async function getRosterMembers() {
   const params = new URLSearchParams({
@@ -88,7 +88,7 @@ export function getLayoutImageUrl(record) {
   return `${PUBLIC_PB_URL}/api/files/${LAYOUTS_COLLECTION}/${record.id}/${record.image}`;
 }
 
-export async function getPastMembers() {
+export async function getOtherPlayers() {
   const params = new URLSearchParams({
     fields: MEMBERS_FIELDS,
     filter: 'joined=false',
