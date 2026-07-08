@@ -2,11 +2,13 @@
   import { onMount } from 'svelte';
   import { getOtherPlayers } from '$lib/pb.js';
   import RosterCard from '$lib/components/RosterCard.svelte';
+  import RankingsTable from '$lib/components/RankingsTable.svelte';
 
   let members = $state([]);
   let loading = $state(false);
   let error = $state(null);
   let selectedGuild = $state('All');
+  let tableView = $state(false);
 
   const guildOptions = $derived.by(() => {
     const tags = new Set();
@@ -50,6 +52,12 @@
         {/each}
       </select>
     </label>
+
+    <label class="toggle-group">
+      Table View
+      <input type="checkbox" class="toggle-input" checked={tableView} onchange={e => tableView = e.target.checked} />
+      <span class="toggle-track"></span>
+    </label>
   </div>
 
   {#if filteredMembers.length === 0}
@@ -58,11 +66,15 @@
     </p>
   {:else}
     <p class="member-count">{filteredMembers.length} other {filteredMembers.length === 1 ? 'player' : 'players'}</p>
-    <div class="roster-grid">
-      {#each filteredMembers as member (member.id)}
-        <RosterCard {member} showGuildTag={true} />
-      {/each}
-    </div>
+    {#if tableView}
+      <RankingsTable members={filteredMembers} showGuildColumn={true} />
+    {:else}
+      <div class="roster-grid">
+        {#each filteredMembers as member (member.id)}
+          <RosterCard {member} showGuildTag={true} />
+        {/each}
+      </div>
+    {/if}
   {/if}
 {/if}
 
@@ -90,6 +102,55 @@
     border-radius: 4px;
     padding: 0.4rem 0.6rem;
     font-size: 0.9rem;
+  }
+
+  .toggle-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    user-select: none;
+  }
+
+  .toggle-input { display: none; }
+
+  .toggle-track {
+    width: 32px;
+    height: 18px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 9px;
+    position: relative;
+    margin-top: 6px;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #666;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.15s, background 0.15s;
+  }
+
+  .toggle-input:checked + .toggle-track {
+    background: #f8c34a;
+    border-color: #f8c34a;
+  }
+
+  .toggle-input:checked + .toggle-track::after {
+    transform: translateX(14px);
+    background: #0d0d0d;
   }
 
   .member-count {
