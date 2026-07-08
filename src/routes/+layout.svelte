@@ -32,8 +32,8 @@
     <a href="/guild-rankings" class="sidebar-link" class:active={$page.url.pathname === '/guild-rankings'} onclick={close}>
       📊 Guild Rankings
     </a>
-    <a href="/past-members" class="sidebar-link" class:active={$page.url.pathname === '/past-members'} onclick={close}>
-      👤 Past Members
+    <a href="/other-players" class="sidebar-link" class:active={$page.url.pathname === '/other-players'} onclick={close}>
+      👤 Other Players
     </a>
     <a href="/castle-layout" class="sidebar-link" class:active={$page.url.pathname === '/castle-layout'} onclick={close}>
       🏰 Castle Layout

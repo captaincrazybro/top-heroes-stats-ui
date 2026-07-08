@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { getPastMembers } from '$lib/pb.js';
+  import { getOtherPlayers } from '$lib/pb.js';
   import RosterCard from '$lib/components/RosterCard.svelte';
 
   let members = $state([]);
@@ -11,7 +11,7 @@
     loading = true;
     error = null;
     try {
-      const result = await getPastMembers();
+      const result = await getOtherPlayers();
       members = result.members;
     } catch (e) {
       error = e.message;
@@ -26,9 +26,9 @@
 {:else if error}
   <p class="status error">{error}</p>
 {:else if members.length === 0}
-  <p class="status">No past members found.</p>
+  <p class="status">No other players found.</p>
 {:else}
-  <p class="member-count">{members.length} past {members.length === 1 ? 'member' : 'members'}</p>
+  <p class="member-count">{members.length} other {members.length === 1 ? 'player' : 'players'}</p>
   <div class="roster-grid">
     {#each members as member (member.id)}
       <RosterCard {member} />
