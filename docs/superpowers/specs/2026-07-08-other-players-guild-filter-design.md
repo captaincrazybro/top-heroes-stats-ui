@@ -19,6 +19,9 @@ dropdown to filter by `guild_tag`.
   guild_tag), or any specific guild tag found in the data.
 - Surface each player's guild on their card so it's visible without opening
   the dropdown.
+- Let the user switch the Other Players list between the existing card-grid
+  view and a sortable table view (like Guild Rankings), scoped to the
+  currently guild-filtered set of players.
 
 ## Non-goals
 
@@ -27,6 +30,9 @@ dropdown to filter by `guild_tag`.
   collection.
 - No change to how "joined" status is determined; `joined=false` remains the
   query filter for this tab.
+- No table-view sort/column changes to the existing Guild Rankings page
+  beyond the internal refactor described below (its rendered output is
+  unchanged).
 
 ## Design
 
@@ -67,6 +73,44 @@ dropdown to filter by `guild_tag`.
   players found for this guild.") when a non-`All` filter yields zero
   results, vs. the existing "No past members found." message when there are
   no `joined=false` records at all.
+
+### Table view (shared `RankingsTable.svelte`)
+
+The Guild Rankings table (currently markup, sort state, and helpers baked
+directly into `src/routes/guild-rankings/+page.svelte`) is extracted into a
+new reusable component, `src/lib/components/RankingsTable.svelte`, so Other
+Players can reuse it instead of duplicating ~40 lines of table/sort logic.
+
+- **Props:** `members` (unsorted array), `showGuildColumn = false`.
+- **Internal state:** `sortCol`/`sortDir` (default `influence`/`desc`, same
+  as today), computed `sorted` via `sortRecords` from `utils.js`. Sort state
+  lives inside the component — callers just pass raw `members`.
+- **Columns:** Rank, Name, Influence, Castle, MQ. Influence, Faction,
+  Activity — unchanged from today. When `showGuildColumn` is `true`, an
+  additional sortable **Guild** column is appended, rendering
+  `member.guild_tag || 'None'`, sorted via the same `sortRecords` (string
+  compare on `guild_tag`).
+- `guild-rankings/+page.svelte` keeps its own data fetching
+  (`getRosterMembers`) but replaces its inline table markup with
+  `<RankingsTable {members} />` (no guild column) — rendered output is
+  unchanged.
+- `other-players/+page.svelte` renders
+  `<RankingsTable members={filteredMembers} showGuildColumn={true} />` when
+  table view is active, where `filteredMembers` is the same guild-filtered
+  array used for the card grid.
+
+### Other Players view toggle
+
+- A "Table View" checkbox is added next to the guild dropdown, using the
+  same toggle styling already established in `FilterBar.svelte`
+  (`.toggle-group`/`.toggle-track`), for visual consistency with the rest of
+  the app.
+- `tableView` state defaults to `false` (card grid, today's behavior).
+- When `tableView` is `true`, the page renders `RankingsTable` instead of
+  the `RosterCard` grid, passing the same `filteredMembers` (guild dropdown
+  selection applies to both views).
+- The member-count line and empty-state messaging stay above/apply to
+  whichever view is active.
 
 ### `RosterCard.svelte`
 
