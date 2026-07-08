@@ -6,6 +6,21 @@
   let members = $state([]);
   let loading = $state(false);
   let error = $state(null);
+  let selectedGuild = $state('All');
+
+  const guildOptions = $derived.by(() => {
+    const tags = new Set();
+    for (const m of members) {
+      if (m.guild_tag) tags.add(m.guild_tag);
+    }
+    return ['All', 'None', ...[...tags].sort()];
+  });
+
+  const filteredMembers = $derived.by(() => {
+    if (selectedGuild === 'All') return members;
+    if (selectedGuild === 'None') return members.filter(m => !m.guild_tag);
+    return members.filter(m => m.guild_tag === selectedGuild);
+  });
 
   onMount(async () => {
     loading = true;
@@ -25,18 +40,58 @@
   <p class="status">Loading…</p>
 {:else if error}
   <p class="status error">{error}</p>
-{:else if members.length === 0}
-  <p class="status">No other players found.</p>
 {:else}
-  <p class="member-count">{members.length} other {members.length === 1 ? 'player' : 'players'}</p>
-  <div class="roster-grid">
-    {#each members as member (member.id)}
-      <RosterCard {member} />
-    {/each}
+  <div class="filter-row">
+    <label class="guild-select">
+      Guild
+      <select bind:value={selectedGuild}>
+        {#each guildOptions as opt}
+          <option value={opt}>{opt}</option>
+        {/each}
+      </select>
+    </label>
   </div>
+
+  {#if filteredMembers.length === 0}
+    <p class="status">
+      {members.length === 0 ? 'No other players found.' : 'No other players found for this guild.'}
+    </p>
+  {:else}
+    <p class="member-count">{filteredMembers.length} other {filteredMembers.length === 1 ? 'player' : 'players'}</p>
+    <div class="roster-grid">
+      {#each filteredMembers as member (member.id)}
+        <RosterCard {member} showGuildTag={true} />
+      {/each}
+    </div>
+  {/if}
 {/if}
 
 <style>
+  .filter-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .guild-select {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .guild-select select {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+  }
+
   .member-count {
     font-size: 12px;
     color: #555;
