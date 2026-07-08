@@ -1,5 +1,5 @@
 <script>
-  let { member, variant = 'standard' } = $props();
+  let { member, variant = 'standard', showGuildTag = false } = $props();
 
   let showModal = $state(false);
 
@@ -93,7 +93,12 @@
 {:else}
   <div class="roster-card" style="border-top-color:{topBorder};overflow:hidden;" role="button" tabindex="0" onclick={() => showModal = true} onkeydown={onKeydown}>
     <div class="card-content">
-      <div class="card-name">{member.player_name}</div>
+      <div class="card-name-row">
+        <div class="card-name">{member.player_name}</div>
+        {#if showGuildTag}
+          <span class="guild-tag-badge">{member.guild_tag || 'None'}</span>
+        {/if}
+      </div>
       <div class="card-stats">
         <div><div class="stat-label">Level</div><div class="stat-val">{member.level}</div></div>
         <div><div class="stat-label">Castle</div><div class="stat-val">{member.castle_level}</div></div>
@@ -263,6 +268,25 @@
   }
 
   .card-name { font-size: 15px; font-weight: 700; color: #e0e0e0; }
+
+  .card-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .guild-tag-badge {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #222;
+    color: #999;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
 
   .card-stats {
     display: grid;
