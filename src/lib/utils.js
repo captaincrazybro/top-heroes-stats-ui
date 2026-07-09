@@ -7,17 +7,27 @@ export function abbrev(n) {
 const DAY_NAMES = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const GAME_DAY_OFFSET_MS = 2 * 3_600_000; // game day resets at 02:00 UTC
 
-function gameDate(dateStr) {
-  return new Date(new Date(dateStr).getTime() - GAME_DAY_OFFSET_MS)
-    .toISOString()
-    .slice(0, 10);
+function aggregateByPlayer(records) {
+  const totals = new Map();
+  const latest = new Map();
+  for (const r of records) {
+    totals.set(r.player_name, (totals.get(r.player_name) ?? 0) + r.score);
+    const prev = latest.get(r.player_name);
+    if (!prev || r.captured_at > prev.captured_at) latest.set(r.player_name, r);
+  }
+  const aggregated = [...totals.entries()].map(([player_name, score]) => ({
+    ...latest.get(player_name),
+    score,
+  }));
+  aggregated.sort((a, b) => b.score - a.score);
+  aggregated.forEach((r, i) => { r.rank = i + 1; });
+  return aggregated;
 }
 
 export function filterByDay(records, day) {
   if (records.length === 0) return [];
   if (day === 'All') {
-    const latestDate = records.map(r => gameDate(r.captured_at)).sort().at(-1);
-    return records.filter(r => gameDate(r.captured_at) === latestDate);
+    return aggregateByPlayer(records);
   }
   const targetIndex = DAY_NAMES.indexOf(day);
   if (targetIndex === -1) return [];

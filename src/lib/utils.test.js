@@ -11,10 +11,27 @@ const RECORDS = [
 ];
 
 describe('filterByDay', () => {
-  test('All returns only records from the most recent game day', () => {
+  test('All sums each player\'s score across every record and ranks by total descending', () => {
     const result = filterByDay(RECORDS, 'All');
     expect(result).toHaveLength(2);
-    expect(result.every(r => r.captured_at.startsWith('2026-06-09'))).toBe(true);
+    const alice = result.find(r => r.player_name === 'Alice');
+    const bob = result.find(r => r.player_name === 'Bob');
+    expect(alice.score).toBe(6500); // 3000 + 3500
+    expect(bob.score).toBe(4500);   // 2000 + 2500
+    expect(alice.rank).toBe(1);
+    expect(bob.rank).toBe(2);
+  });
+
+  test('All keeps id and guild_tag from the most recently captured record per player', () => {
+    const records = [
+      { id: 'e1', rank: 5, player_name: 'Alice', score: 1000, guild_tag: 'HGS', captured_at: '2026-06-08T02:00:00.000Z' },
+      { id: 'e2', rank: 3, player_name: 'Alice', score: 2000, guild_tag: 'HGS', captured_at: '2026-06-09T02:00:00.000Z' },
+    ];
+    const result = filterByDay(records, 'All');
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('e2');
+    expect(result[0].guild_tag).toBe('HGS');
+    expect(result[0].score).toBe(3000);
   });
 
   test('Mon returns records captured during Monday game day', () => {
@@ -46,13 +63,14 @@ describe('filterByDay', () => {
     expect(filterByDay(resetRecords, 'Mon')).toHaveLength(0);
   });
 
-  test('All groups pre-02:00 UTC records with previous game day', () => {
-    // Mix of 01:30 UTC Tue (game Mon) and 03:00 UTC Mon (game Mon) — same game day
-    const mixed = [
+  test('All combines multiple records for the same player into one summed row', () => {
+    const repeated = [
       { rank: 1, player_name: 'Alice', score: 3000, captured_at: '2026-06-08T03:00:00.000Z' },
       { rank: 1, player_name: 'Alice', score: 3500, captured_at: '2026-06-09T01:30:00.000Z' },
     ];
-    expect(filterByDay(mixed, 'All')).toHaveLength(2);
+    const result = filterByDay(repeated, 'All');
+    expect(result).toHaveLength(1);
+    expect(result[0].score).toBe(6500);
   });
 
   test('returns empty array for empty input on All', () => {
