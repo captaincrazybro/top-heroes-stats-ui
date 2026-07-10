@@ -73,6 +73,28 @@ describe('filterByDay', () => {
     expect(result[0].score).toBe(6500);
   });
 
+  test('All merges near-duplicate names (above similarity threshold) into one summed row', () => {
+    // 'Bobb' vs 'Bobby': editDistance=1, similarity=0.8 — above threshold
+    const records = [
+      { id: 'e1', rank: 1, player_name: 'Bobby', score: 2000, captured_at: '2026-06-08T02:00:00.000Z' },
+      { id: 'e2', rank: 1, player_name: 'Bobb',  score: 2500, captured_at: '2026-06-09T02:00:00.000Z' },
+    ];
+    const result = filterByDay(records, 'All');
+    expect(result).toHaveLength(1);
+    expect(result[0].score).toBe(4500);
+    expect(result[0].id).toBe('e2');
+  });
+
+  test('All keeps genuinely different names as separate rows', () => {
+    // 'Alice' vs 'Zxqrst' — below similarity threshold
+    const records = [
+      { id: 'e1', rank: 1, player_name: 'Alice',  score: 2000, captured_at: '2026-06-08T02:00:00.000Z' },
+      { id: 'e2', rank: 2, player_name: 'Zxqrst', score: 2500, captured_at: '2026-06-08T02:00:00.000Z' },
+    ];
+    const result = filterByDay(records, 'All');
+    expect(result).toHaveLength(2);
+  });
+
   test('returns empty array for empty input on All', () => {
     expect(filterByDay([], 'All')).toEqual([]);
   });

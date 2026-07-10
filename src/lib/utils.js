@@ -6,19 +6,21 @@ export function abbrev(n) {
 
 const DAY_NAMES = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const GAME_DAY_OFFSET_MS = 2 * 3_600_000; // game day resets at 02:00 UTC
+const NAME_SIMILARITY_THRESHOLD = 0.75;
 
 function aggregateByPlayer(records) {
-  const totals = new Map();
-  const latest = new Map();
-  for (const r of records) {
-    totals.set(r.player_name, (totals.get(r.player_name) ?? 0) + r.score);
-    const prev = latest.get(r.player_name);
-    if (!prev || r.captured_at > prev.captured_at) latest.set(r.player_name, r);
+  const sorted = [...records].sort((a, b) => a.captured_at.localeCompare(b.captured_at));
+  const clusters = [];
+  for (const r of sorted) {
+    const cluster = clusters.find(c => similarity(c.latest.player_name, r.player_name) >= NAME_SIMILARITY_THRESHOLD);
+    if (cluster) {
+      cluster.score += r.score;
+      cluster.latest = r;
+    } else {
+      clusters.push({ score: r.score, latest: r });
+    }
   }
-  const aggregated = [...totals.entries()].map(([player_name, score]) => ({
-    ...latest.get(player_name),
-    score,
-  }));
+  const aggregated = clusters.map(c => ({ ...c.latest, score: c.score }));
   aggregated.sort((a, b) => b.score - a.score);
   aggregated.forEach((r, i) => { r.rank = i + 1; });
   return aggregated;
@@ -63,7 +65,7 @@ export function similarity(a, b) {
   return (maxLen - editDistance(s1, s2)) / maxLen;
 }
 
-export function matchRosterToEvent(rosterMembers, eventRecords, threshold = 0.75) {
+export function matchRosterToEvent(rosterMembers, eventRecords, threshold = NAME_SIMILARITY_THRESHOLD) {
   const usedIds = new Set();
   return rosterMembers.map(member => {
     let best = 0, bestRecord = null;
