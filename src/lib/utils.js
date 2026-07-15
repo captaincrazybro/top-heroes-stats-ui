@@ -18,7 +18,7 @@ function aggregateByPlayer(records) {
 
   const aggregated = [];
   for (const guildRecords of byGuild.values()) {
-    const sorted = [...guildRecords].sort((a, b) => a.captured_at.localeCompare(b.captured_at));
+    const sorted = [...guildRecords].sort((a, b) => a.capture_date.localeCompare(b.capture_date));
     const clusters = [];
     for (const r of sorted) {
       const cluster = clusters.find(c => similarity(c.latest.player_name, r.player_name) >= NAME_SIMILARITY_THRESHOLD);
@@ -45,7 +45,7 @@ export function filterByDay(records, day) {
   const targetIndex = DAY_NAMES.indexOf(day);
   if (targetIndex === -1) return [];
   return records.filter(r =>
-    new Date(new Date(r.captured_at).getTime() - GAME_DAY_OFFSET_MS).getUTCDay() === targetIndex
+    new Date(new Date(r.capture_date).getTime() - GAME_DAY_OFFSET_MS).getUTCDay() === targetIndex
   );
 }
 

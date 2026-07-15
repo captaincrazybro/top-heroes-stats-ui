@@ -4,10 +4,10 @@ import { filterByDay, sortRecords, formatRelativeTime, similarity, matchRosterTo
 // Game day resets at 02:00 UTC. Records before 02:00 UTC belong to the previous game day.
 // Mon Jun 8 game day = 02:00 Jun 8 UTC through 01:59 Jun 9 UTC
 const RECORDS = [
-  { rank: 1, player_name: 'Alice', score: 3000, captured_at: '2026-06-08T02:50:00.000Z' },
-  { rank: 2, player_name: 'Bob',   score: 2000, captured_at: '2026-06-08T02:50:00.000Z' },
-  { rank: 1, player_name: 'Alice', score: 3500, captured_at: '2026-06-09T02:50:00.000Z' },
-  { rank: 2, player_name: 'Bob',   score: 2500, captured_at: '2026-06-09T02:50:00.000Z' },
+  { rank: 1, player_name: 'Alice', score: 3000, capture_date: '2026-06-08T02:50:00.000Z' },
+  { rank: 2, player_name: 'Bob',   score: 2000, capture_date: '2026-06-08T02:50:00.000Z' },
+  { rank: 1, player_name: 'Alice', score: 3500, capture_date: '2026-06-09T02:50:00.000Z' },
+  { rank: 2, player_name: 'Bob',   score: 2500, capture_date: '2026-06-09T02:50:00.000Z' },
 ];
 
 describe('filterByDay', () => {
@@ -24,8 +24,8 @@ describe('filterByDay', () => {
 
   test('All keeps id and guild_tag from the most recently captured record per player', () => {
     const records = [
-      { id: 'e1', rank: 5, player_name: 'Alice', score: 1000, guild_tag: 'HGS', captured_at: '2026-06-08T02:00:00.000Z' },
-      { id: 'e2', rank: 3, player_name: 'Alice', score: 2000, guild_tag: 'HGS', captured_at: '2026-06-09T02:00:00.000Z' },
+      { id: 'e1', rank: 5, player_name: 'Alice', score: 1000, guild_tag: 'HGS', capture_date: '2026-06-08T02:00:00.000Z' },
+      { id: 'e2', rank: 3, player_name: 'Alice', score: 2000, guild_tag: 'HGS', capture_date: '2026-06-09T02:00:00.000Z' },
     ];
     const result = filterByDay(records, 'All');
     expect(result).toHaveLength(1);
@@ -37,19 +37,19 @@ describe('filterByDay', () => {
   test('Mon returns records captured during Monday game day', () => {
     const result = filterByDay(RECORDS, 'Mon');
     expect(result).toHaveLength(2);
-    expect(result.every(r => r.captured_at.startsWith('2026-06-08'))).toBe(true);
+    expect(result.every(r => r.capture_date.startsWith('2026-06-08'))).toBe(true);
   });
 
   test('Tue returns records captured during Tuesday game day', () => {
     const result = filterByDay(RECORDS, 'Tue');
     expect(result).toHaveLength(2);
-    expect(result.every(r => r.captured_at.startsWith('2026-06-09'))).toBe(true);
+    expect(result.every(r => r.capture_date.startsWith('2026-06-09'))).toBe(true);
   });
 
   test('records before 02:00 UTC belong to the previous game day', () => {
     // 01:30 UTC Tuesday is still Monday game day
     const earlyRecords = [
-      { rank: 1, player_name: 'Alice', score: 3000, captured_at: '2026-06-09T01:30:00.000Z' },
+      { rank: 1, player_name: 'Alice', score: 3000, capture_date: '2026-06-09T01:30:00.000Z' },
     ];
     expect(filterByDay(earlyRecords, 'Mon')).toHaveLength(1);
     expect(filterByDay(earlyRecords, 'Tue')).toHaveLength(0);
@@ -57,7 +57,7 @@ describe('filterByDay', () => {
 
   test('records at exactly 02:00 UTC start the new game day', () => {
     const resetRecords = [
-      { rank: 1, player_name: 'Alice', score: 3000, captured_at: '2026-06-09T02:00:00.000Z' },
+      { rank: 1, player_name: 'Alice', score: 3000, capture_date: '2026-06-09T02:00:00.000Z' },
     ];
     expect(filterByDay(resetRecords, 'Tue')).toHaveLength(1);
     expect(filterByDay(resetRecords, 'Mon')).toHaveLength(0);
@@ -65,8 +65,8 @@ describe('filterByDay', () => {
 
   test('All combines multiple records for the same player into one summed row', () => {
     const repeated = [
-      { rank: 1, player_name: 'Alice', score: 3000, captured_at: '2026-06-08T03:00:00.000Z' },
-      { rank: 1, player_name: 'Alice', score: 3500, captured_at: '2026-06-09T01:30:00.000Z' },
+      { rank: 1, player_name: 'Alice', score: 3000, capture_date: '2026-06-08T03:00:00.000Z' },
+      { rank: 1, player_name: 'Alice', score: 3500, capture_date: '2026-06-09T01:30:00.000Z' },
     ];
     const result = filterByDay(repeated, 'All');
     expect(result).toHaveLength(1);
@@ -76,8 +76,8 @@ describe('filterByDay', () => {
   test('All merges near-duplicate names (above similarity threshold) into one summed row', () => {
     // 'Bobb' vs 'Bobby': editDistance=1, similarity=0.8 — above threshold
     const records = [
-      { id: 'e1', rank: 1, player_name: 'Bobby', score: 2000, captured_at: '2026-06-08T02:00:00.000Z' },
-      { id: 'e2', rank: 1, player_name: 'Bobb',  score: 2500, captured_at: '2026-06-09T02:00:00.000Z' },
+      { id: 'e1', rank: 1, player_name: 'Bobby', score: 2000, capture_date: '2026-06-08T02:00:00.000Z' },
+      { id: 'e2', rank: 1, player_name: 'Bobb',  score: 2500, capture_date: '2026-06-09T02:00:00.000Z' },
     ];
     const result = filterByDay(records, 'All');
     expect(result).toHaveLength(1);
@@ -89,8 +89,8 @@ describe('filterByDay', () => {
     // 'Bobby' (HGS) vs 'Bobb' (other guild): similarity 0.8 — above threshold,
     // but they are different players in different guilds and must stay separate.
     const records = [
-      { id: 'e1', rank: 1, player_name: 'Bobby', score: 2000, guild_tag: 'HGS', captured_at: '2026-06-08T02:00:00.000Z' },
-      { id: 'e2', rank: 1, player_name: 'Bobb',  score: 2500, guild_tag: 'XYZ', captured_at: '2026-06-09T02:00:00.000Z' },
+      { id: 'e1', rank: 1, player_name: 'Bobby', score: 2000, guild_tag: 'HGS', capture_date: '2026-06-08T02:00:00.000Z' },
+      { id: 'e2', rank: 1, player_name: 'Bobb',  score: 2500, guild_tag: 'XYZ', capture_date: '2026-06-09T02:00:00.000Z' },
     ];
     const result = filterByDay(records, 'All');
     expect(result).toHaveLength(2);
@@ -103,8 +103,8 @@ describe('filterByDay', () => {
   test('All keeps genuinely different names as separate rows', () => {
     // 'Alice' vs 'Zxqrst' — below similarity threshold
     const records = [
-      { id: 'e1', rank: 1, player_name: 'Alice',  score: 2000, captured_at: '2026-06-08T02:00:00.000Z' },
-      { id: 'e2', rank: 2, player_name: 'Zxqrst', score: 2500, captured_at: '2026-06-08T02:00:00.000Z' },
+      { id: 'e1', rank: 1, player_name: 'Alice',  score: 2000, capture_date: '2026-06-08T02:00:00.000Z' },
+      { id: 'e2', rank: 2, player_name: 'Zxqrst', score: 2500, capture_date: '2026-06-08T02:00:00.000Z' },
     ];
     const result = filterByDay(records, 'All');
     expect(result).toHaveLength(2);
