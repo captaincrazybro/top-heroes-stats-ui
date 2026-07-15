@@ -14,6 +14,19 @@ function mockFetch(data, status = 200) {
   });
 }
 
+function mockFetchSequence(responses) {
+  const fn = vi.fn();
+  for (const { data, status = 200 } of responses) {
+    fn.mockResolvedValueOnce({
+      ok: status >= 200 && status < 300,
+      status,
+      json: () => Promise.resolve(data),
+      text: () => Promise.resolve(JSON.stringify(data)),
+    });
+  }
+  return fn;
+}
+
 afterEach(() => vi.restoreAllMocks());
 
 describe('getEventOptions', () => {
@@ -90,6 +103,32 @@ describe('getRecords', () => {
   test('throws on non-ok response', async () => {
     vi.stubGlobal('fetch', mockFetch({ message: 'Forbidden' }, 403));
     await expect(getRecords('GAR', '2026-06-09')).rejects.toThrow('403');
+  });
+
+  test('fetches every page and concatenates items when totalPages > 1', async () => {
+    const page1Items = [{ id: '1', player_name: 'Alice', score: 100 }];
+    const page2Items = [{ id: '2', player_name: 'Bob', score: 200 }];
+    const fetchMock = mockFetchSequence([
+      { data: { items: page1Items, page: 1, perPage: 1, totalItems: 2, totalPages: 2 } },
+      { data: { items: page2Items, page: 2, perPage: 1, totalItems: 2, totalPages: 2 } },
+    ]);
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await getRecords('GAR', '2026-06-09');
+
+    expect(result).toEqual([...page1Items, ...page2Items]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(decodeURIComponent(fetchMock.mock.calls[0][0])).toContain('page=1');
+    expect(decodeURIComponent(fetchMock.mock.calls[1][0])).toContain('page=2');
+  });
+
+  test('stops after a single page when totalPages is 1', async () => {
+    const fetchMock = mockFetch({ items: [{ id: '1' }], page: 1, perPage: 500, totalItems: 1, totalPages: 1 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await getRecords('GAR', '2026-06-09');
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -3,17 +3,27 @@ import { PUBLIC_PB_URL } from '$env/static/public';
 const COLLECTION = 'topHeroesEventRecords';
 export const DEFAULT_GUILD = 'HGS';
 
-async function pbFetch(path) {
+async function pbFetchPage(path) {
   const res = await fetch(`${PUBLIC_PB_URL}/api${path}`);
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new Error(`PocketBase ${path} → ${res.status}: ${body}`);
   }
-  const data = await res.json();
-  if (data.totalPages > 1) {
-    console.warn(`[pb] ${path} has ${data.totalPages} pages; only page 1 returned`);
+  return res.json();
+}
+
+// PocketBase caps perPage server-side, so a single request can silently
+// truncate results. Follow `page` until totalPages is exhausted.
+async function pbFetch(collectionPath, params) {
+  const items = [];
+  let page = 1;
+  while (true) {
+    params.set('page', String(page));
+    const data = await pbFetchPage(`${collectionPath}?${params}`);
+    items.push(...data.items);
+    if (!data.totalPages || page >= data.totalPages) return items;
+    page++;
   }
-  return data;
 }
 
 export async function getEventOptions() {
@@ -22,9 +32,9 @@ export async function getEventOptions() {
     sort: '-event_start_date',
     perPage: '500',
   });
-  const data = await pbFetch(`/collections/${COLLECTION}/records?${params}`);
+  const items = await pbFetch(`/collections/${COLLECTION}/records`, params);
   const seen = new Set();
-  return data.items
+  return items
     .map(r => ({ eventType: r.event_type, week: r.event_start_date.split(' ')[0] }))
     .filter(({ eventType, week }) => {
       const key = `${eventType}|${week}`;
@@ -40,8 +50,7 @@ export async function getRecords(eventType, eventStartDate, guild = DEFAULT_GUIL
     sort: 'rank',
     perPage: '500',
   });
-  const data = await pbFetch(`/collections/${COLLECTION}/records?${params}`);
-  return data.items;
+  return pbFetch(`/collections/${COLLECTION}/records`, params);
 }
 
 export async function getOtherGuildRecords(eventType, eventStartDate, excludeGuild = DEFAULT_GUILD) {
@@ -50,8 +59,7 @@ export async function getOtherGuildRecords(eventType, eventStartDate, excludeGui
     sort: 'rank',
     perPage: '500',
   });
-  const data = await pbFetch(`/collections/${COLLECTION}/records?${params}`);
-  return data.items;
+  return pbFetch(`/collections/${COLLECTION}/records`, params);
 }
 
 const MEMBERS_COLLECTION = 'topHeroesGuildRoster';
@@ -64,12 +72,12 @@ export async function getRosterMembers() {
     sort: '-influence',
     perPage: '500',
   });
-  const data = await pbFetch(`/collections/${MEMBERS_COLLECTION}/records?${params}`);
-  const lastUpdated = data.items.reduce(
+  const members = await pbFetch(`/collections/${MEMBERS_COLLECTION}/records`, params);
+  const lastUpdated = members.reduce(
     (max, r) => (r.updated > max ? r.updated : max),
     ''
   );
-  return { members: data.items, lastUpdated };
+  return { members, lastUpdated };
 }
 
 const LAYOUTS_COLLECTION = 'topHeroesCastleLayouts';
@@ -79,8 +87,7 @@ export async function getCastleLayouts() {
     sort: '-created',
     perPage: '500',
   });
-  const data = await pbFetch(`/collections/${LAYOUTS_COLLECTION}/records?${params}`);
-  return data.items;
+  return pbFetch(`/collections/${LAYOUTS_COLLECTION}/records`, params);
 }
 
 export function getLayoutImageUrl(record) {
@@ -95,6 +102,6 @@ export async function getOtherPlayers() {
     sort: '-influence',
     perPage: '500',
   });
-  const data = await pbFetch(`/collections/${MEMBERS_COLLECTION}/records?${params}`);
-  return { members: data.items };
+  const members = await pbFetch(`/collections/${MEMBERS_COLLECTION}/records`, params);
+  return { members };
 }
