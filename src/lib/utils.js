@@ -9,18 +9,29 @@ const GAME_DAY_OFFSET_MS = 2 * 3_600_000; // game day resets at 02:00 UTC
 const NAME_SIMILARITY_THRESHOLD = 0.75;
 
 function aggregateByPlayer(records) {
-  const sorted = [...records].sort((a, b) => a.captured_at.localeCompare(b.captured_at));
-  const clusters = [];
-  for (const r of sorted) {
-    const cluster = clusters.find(c => similarity(c.latest.player_name, r.player_name) >= NAME_SIMILARITY_THRESHOLD);
-    if (cluster) {
-      cluster.score += r.score;
-      cluster.latest = r;
-    } else {
-      clusters.push({ score: r.score, latest: r });
-    }
+  const byGuild = new Map();
+  for (const r of records) {
+    const key = r.guild_tag ?? '';
+    if (!byGuild.has(key)) byGuild.set(key, []);
+    byGuild.get(key).push(r);
   }
-  const aggregated = clusters.map(c => ({ ...c.latest, score: c.score }));
+
+  const aggregated = [];
+  for (const guildRecords of byGuild.values()) {
+    const sorted = [...guildRecords].sort((a, b) => a.captured_at.localeCompare(b.captured_at));
+    const clusters = [];
+    for (const r of sorted) {
+      const cluster = clusters.find(c => similarity(c.latest.player_name, r.player_name) >= NAME_SIMILARITY_THRESHOLD);
+      if (cluster) {
+        cluster.score += r.score;
+        cluster.latest = r;
+      } else {
+        clusters.push({ score: r.score, latest: r });
+      }
+    }
+    aggregated.push(...clusters.map(c => ({ ...c.latest, score: c.score })));
+  }
+
   aggregated.sort((a, b) => b.score - a.score);
   aggregated.forEach((r, i) => { r.rank = i + 1; });
   return aggregated;

@@ -85,6 +85,21 @@ describe('filterByDay', () => {
     expect(result[0].id).toBe('e2');
   });
 
+  test('All does not merge near-duplicate names across different guilds', () => {
+    // 'Bobby' (HGS) vs 'Bobb' (other guild): similarity 0.8 — above threshold,
+    // but they are different players in different guilds and must stay separate.
+    const records = [
+      { id: 'e1', rank: 1, player_name: 'Bobby', score: 2000, guild_tag: 'HGS', captured_at: '2026-06-08T02:00:00.000Z' },
+      { id: 'e2', rank: 1, player_name: 'Bobb',  score: 2500, guild_tag: 'XYZ', captured_at: '2026-06-09T02:00:00.000Z' },
+    ];
+    const result = filterByDay(records, 'All');
+    expect(result).toHaveLength(2);
+    const hgs = result.find(r => r.guild_tag === 'HGS');
+    const xyz = result.find(r => r.guild_tag === 'XYZ');
+    expect(hgs.score).toBe(2000);
+    expect(xyz.score).toBe(2500);
+  });
+
   test('All keeps genuinely different names as separate rows', () => {
     // 'Alice' vs 'Zxqrst' — below similarity threshold
     const records = [
