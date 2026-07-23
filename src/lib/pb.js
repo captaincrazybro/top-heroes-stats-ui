@@ -108,7 +108,7 @@ export async function getOtherPlayers() {
 
 export async function getAllGuildMembers() {
   const params = new URLSearchParams({
-    fields: `${MEMBERS_FIELDS},joined`,
+    fields: `${MEMBERS_FIELDS},joined,server`,
     sort: '-influence',
     perPage: '500',
   });

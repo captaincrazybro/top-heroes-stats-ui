@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { filterByDay, sortRecords, formatRelativeTime, similarity, matchRosterToEvent } from './utils.js';
+import { filterByDay, sortRecords, formatRelativeTime, similarity, matchRosterToEvent, matchesServer, DEFAULT_SERVER } from './utils.js';
 
 // Game day resets at 02:00 UTC. Records before 02:00 UTC belong to the previous game day.
 // Mon Jun 8 game day = 02:00 Jun 8 UTC through 01:59 Jun 9 UTC
@@ -321,5 +321,39 @@ describe('formatRelativeTime', () => {
   test('returns "X days ago" for multiple days', () => {
     vi.setSystemTime(new Date('2026-06-20T12:00:00Z'));
     expect(formatRelativeTime('2026-06-17 12:00:00.000Z')).toBe('3 days ago');
+  });
+});
+
+describe('matchesServer', () => {
+  test('"All" matches every member regardless of server', () => {
+    expect(matchesServer({ server: '10608' }, 'All')).toBe(true);
+    expect(matchesServer({ server: '' }, 'All')).toBe(true);
+    expect(matchesServer({}, 'All')).toBe(true);
+  });
+
+  test('DEFAULT_SERVER matches members with that exact server', () => {
+    expect(matchesServer({ server: DEFAULT_SERVER }, DEFAULT_SERVER)).toBe(true);
+  });
+
+  test('DEFAULT_SERVER also matches members with a blank server', () => {
+    expect(matchesServer({ server: '' }, DEFAULT_SERVER)).toBe(true);
+  });
+
+  test('DEFAULT_SERVER also matches members with no server field at all', () => {
+    expect(matchesServer({}, DEFAULT_SERVER)).toBe(true);
+  });
+
+  test('DEFAULT_SERVER does not match a different server', () => {
+    expect(matchesServer({ server: '10608' }, DEFAULT_SERVER)).toBe(false);
+  });
+
+  test('a non-default server only matches that exact value', () => {
+    expect(matchesServer({ server: '10608' }, '10608')).toBe(true);
+    expect(matchesServer({ server: '10607' }, '10608')).toBe(false);
+  });
+
+  test('a non-default server does not fall back to blank/unset', () => {
+    expect(matchesServer({ server: '' }, '10608')).toBe(false);
+    expect(matchesServer({}, '10608')).toBe(false);
   });
 });

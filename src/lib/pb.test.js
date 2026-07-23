@@ -259,7 +259,7 @@ describe('getAllGuildMembers', () => {
     expect(url).not.toContain('filter=');
   });
 
-  test('requests joined and guild_tag fields, sort, and perPage', async () => {
+  test('requests joined, guild_tag, and server fields, sort, and perPage', async () => {
     const fetchMock = mockFetch({ items: [] });
     vi.stubGlobal('fetch', fetchMock);
     await getAllGuildMembers();
@@ -268,6 +268,7 @@ describe('getAllGuildMembers', () => {
     expect(url).toContain('perPage=500');
     expect(url).toContain('joined');
     expect(url).toContain('guild_tag');
+    expect(url).toContain('server');
   });
 
   test('throws on non-ok response', async () => {

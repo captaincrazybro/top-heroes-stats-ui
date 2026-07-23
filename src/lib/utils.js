@@ -108,6 +108,14 @@ export function sortRecords(records, column, direction) {
   return direction === 'desc' ? sorted.reverse() : sorted;
 }
 
+export const DEFAULT_SERVER = '10607';
+
+export function matchesServer(member, selectedServer) {
+  if (selectedServer === 'All') return true;
+  if (selectedServer === DEFAULT_SERVER) return !member.server || member.server === DEFAULT_SERVER;
+  return member.server === selectedServer;
+}
+
 export function formatRelativeTime(dateStr) {
   if (!dateStr) return 'unknown';
   const diff = Date.now() - new Date(dateStr.replace(/\s/, 'T')).getTime();

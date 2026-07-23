@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { getAllGuildMembers } from '$lib/pb.js';
+  import { matchesServer, DEFAULT_SERVER } from '$lib/utils.js';
   import RosterCard from '$lib/components/RosterCard.svelte';
   import RankingsTable from '$lib/components/RankingsTable.svelte';
 
@@ -8,6 +9,7 @@
   let loading = $state(false);
   let error = $state(null);
   let selectedGuild = $state('All');
+  let selectedServer = $state(DEFAULT_SERVER);
   let tableView = $state(false);
   let includeGuild = $state(false);
 
@@ -22,16 +24,26 @@
     return ['All', 'None', ...[...tags].sort()];
   });
 
+  const serverOptions = $derived.by(() => {
+    const servers = new Set();
+    for (const m of allMembers) {
+      if (m.server) servers.add(m.server);
+    }
+    return ['All', ...[...servers].sort()];
+  });
+
   const filteredMembers = $derived.by(() => {
-    if (selectedGuild === 'All') return members;
-    if (selectedGuild === 'None') return members.filter(m => !m.guild_tag);
-    return members.filter(m => m.guild_tag === selectedGuild);
+    const byGuild = selectedGuild === 'All' ? members
+      : selectedGuild === 'None' ? members.filter(m => !m.guild_tag)
+      : members.filter(m => m.guild_tag === selectedGuild);
+    return byGuild.filter(m => matchesServer(m, selectedServer));
   });
 
   const displayMembers = $derived.by(() => {
     if (!includeGuild) return filteredMembers;
     const ids = new Set(filteredMembers.map(m => m.id));
-    return [...filteredMembers, ...currentMembers.filter(m => !ids.has(m.id))];
+    const extraCurrent = currentMembers.filter(m => matchesServer(m, selectedServer) && !ids.has(m.id));
+    return [...filteredMembers, ...extraCurrent];
   });
 
   onMount(async () => {
@@ -57,6 +69,15 @@
       Guild
       <select bind:value={selectedGuild}>
         {#each guildOptions as opt}
+          <option value={opt}>{opt}</option>
+        {/each}
+      </select>
+    </label>
+
+    <label class="guild-select">
+      Server
+      <select bind:value={selectedServer}>
+        {#each serverOptions as opt}
           <option value={opt}>{opt}</option>
         {/each}
       </select>
