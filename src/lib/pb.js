@@ -105,3 +105,12 @@ export async function getOtherPlayers() {
   const members = await pbFetch(`/collections/${MEMBERS_COLLECTION}/records`, params);
   return { members };
 }
+
+export async function getAllGuildMembers() {
+  const params = new URLSearchParams({
+    fields: `${MEMBERS_FIELDS},joined`,
+    sort: '-influence',
+    perPage: '500',
+  });
+  return pbFetch(`/collections/${MEMBERS_COLLECTION}/records`, params);
+}

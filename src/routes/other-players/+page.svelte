@@ -1,14 +1,18 @@
 <script>
   import { onMount } from 'svelte';
-  import { getOtherPlayers } from '$lib/pb.js';
+  import { getAllGuildMembers } from '$lib/pb.js';
   import RosterCard from '$lib/components/RosterCard.svelte';
   import RankingsTable from '$lib/components/RankingsTable.svelte';
 
-  let members = $state([]);
+  let allMembers = $state([]);
   let loading = $state(false);
   let error = $state(null);
   let selectedGuild = $state('All');
   let tableView = $state(false);
+  let includeGuild = $state(false);
+
+  const members = $derived(allMembers.filter(m => !m.joined));
+  const currentMembers = $derived(allMembers.filter(m => m.joined));
 
   const guildOptions = $derived.by(() => {
     const tags = new Set();
@@ -24,12 +28,17 @@
     return members.filter(m => m.guild_tag === selectedGuild);
   });
 
+  const displayMembers = $derived.by(() => {
+    if (!includeGuild) return filteredMembers;
+    const ids = new Set(filteredMembers.map(m => m.id));
+    return [...filteredMembers, ...currentMembers.filter(m => !ids.has(m.id))];
+  });
+
   onMount(async () => {
     loading = true;
     error = null;
     try {
-      const result = await getOtherPlayers();
-      members = result.members;
+      allMembers = await getAllGuildMembers();
     } catch (e) {
       error = e.message;
     } finally {
@@ -58,19 +67,25 @@
       <input type="checkbox" class="toggle-input" checked={tableView} onchange={e => tableView = e.target.checked} />
       <span class="toggle-track"></span>
     </label>
+
+    <label class="toggle-group">
+      Include Guild
+      <input type="checkbox" class="toggle-input" checked={includeGuild} onchange={e => includeGuild = e.target.checked} />
+      <span class="toggle-track"></span>
+    </label>
   </div>
 
-  {#if filteredMembers.length === 0}
+  {#if displayMembers.length === 0}
     <p class="status">
       {members.length === 0 ? 'No other players found.' : 'No other players found for this guild.'}
     </p>
   {:else}
-    <p class="member-count">{filteredMembers.length} other {filteredMembers.length === 1 ? 'player' : 'players'}</p>
+    <p class="member-count">{displayMembers.length} other {displayMembers.length === 1 ? 'player' : 'players'}</p>
     {#if tableView}
-      <RankingsTable members={filteredMembers} showGuildColumn={true} />
+      <RankingsTable members={displayMembers} showGuildColumn={true} />
     {:else}
       <div class="roster-grid">
-        {#each filteredMembers as member (member.id)}
+        {#each displayMembers as member (member.id)}
           <RosterCard {member} showGuildTag={true} />
         {/each}
       </div>

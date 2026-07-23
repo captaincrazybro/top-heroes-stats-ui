@@ -3,7 +3,7 @@ import { describe, test, expect, vi, afterEach } from 'vitest';
 vi.mock('$env/static/public', () => ({ PUBLIC_PB_URL: 'http://localhost:8090' }));
 
 // Import after mock is registered
-const { getEventOptions, getRecords, getRosterMembers, getOtherPlayers } = await import('./pb.js');
+const { getEventOptions, getRecords, getRosterMembers, getOtherPlayers, getAllGuildMembers } = await import('./pb.js');
 
 function mockFetch(data, status = 200) {
   return vi.fn().mockResolvedValue({
@@ -220,5 +220,58 @@ describe('getOtherPlayers', () => {
   test('throws on non-ok response', async () => {
     vi.stubGlobal('fetch', mockFetch({ message: 'Forbidden' }, 403));
     await expect(getOtherPlayers()).rejects.toThrow('403');
+  });
+});
+
+describe('getAllGuildMembers', () => {
+  const CURRENT_ITEM = {
+    id: 'cur1',
+    player_name: 'Alice', rank: 'R4', level: 85, castle_level: 25,
+    influence: 4200000, main_queue_influence: 1100000,
+    main_queue_faction: 'League',
+    last_online: '2026-06-17 10:00:00.000Z',
+    updated: '2026-06-17 10:00:00.000Z',
+    guild_tag: 'HGS',
+    joined: true,
+  };
+  const OTHER_ITEM = {
+    id: 'past1',
+    player_name: 'Charlie', rank: 'R3', level: 70, castle_level: 18,
+    influence: 2500000, main_queue_influence: 600000,
+    main_queue_faction: 'Nature',
+    last_online: '2026-06-10 08:00:00.000Z',
+    updated: '2026-06-10 08:00:00.000Z',
+    guild_tag: 'HGS',
+    joined: false,
+  };
+
+  test('returns members array from PocketBase response, regardless of joined value', async () => {
+    vi.stubGlobal('fetch', mockFetch({ items: [CURRENT_ITEM, OTHER_ITEM] }));
+    const members = await getAllGuildMembers();
+    expect(members).toEqual([CURRENT_ITEM, OTHER_ITEM]);
+  });
+
+  test('does not filter by joined', async () => {
+    const fetchMock = mockFetch({ items: [] });
+    vi.stubGlobal('fetch', fetchMock);
+    await getAllGuildMembers();
+    const url = decodeURIComponent(fetchMock.mock.calls[0][0]);
+    expect(url).not.toContain('filter=');
+  });
+
+  test('requests joined and guild_tag fields, sort, and perPage', async () => {
+    const fetchMock = mockFetch({ items: [] });
+    vi.stubGlobal('fetch', fetchMock);
+    await getAllGuildMembers();
+    const url = decodeURIComponent(fetchMock.mock.calls[0][0]);
+    expect(url).toContain('sort=-influence');
+    expect(url).toContain('perPage=500');
+    expect(url).toContain('joined');
+    expect(url).toContain('guild_tag');
+  });
+
+  test('throws on non-ok response', async () => {
+    vi.stubGlobal('fetch', mockFetch({ message: 'Forbidden' }, 403));
+    await expect(getAllGuildMembers()).rejects.toThrow('403');
   });
 });
